@@ -37,8 +37,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('archives', nargs='+')
     parser.add_argument('--host', default='107.191.60.146')
-    parser.add_argument('--database', default='prices')
-    parser.add_argument('--batch-size', type=int, default=10000)
+    parser.add_argument('--database', default='market')
+    parser.add_argument('--batch-size', type=int, default=1000)
     args = parser.parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     for filename in args.archives:
@@ -54,7 +54,6 @@ def main():
             points = []
             for line in f:
                 obj = json.loads(line)
-                ts = obj['__timestamp__']
                 bids, asks = get_prices(obj)
                 points.append({
                     'measurement': 'price',
@@ -62,7 +61,7 @@ def main():
                         'exchange': exchange,
                         'symbol': symbol
                     },
-                    'time': int(ts),
+                    'time': obj['__timestamp__'],
                     'fields': {
                         'bid': max(bids),
                         'ask': min(asks)
