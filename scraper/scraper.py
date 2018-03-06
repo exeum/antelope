@@ -14,12 +14,18 @@ TIMEOUT = 5
 RETRIES = 3
 
 
-def write_metric(db, measurement, k, v):
+def write_point(db, exchange, symbol, crawler_id, size, latency):
     point = {
-        'measurement': measurement,
+        'measurement': 'orderbook',
+        'tags': {
+            'exchange': exchange,
+            'symbol': symbol,
+            'id': crawler_id
+        },
         'time': int(time.time()),
         'fields': {
-            k: float(v)
+            'size': float(size),
+            'latency': float(latency)
         }
     }
     db.write_points([point], time_precision='s')
@@ -63,9 +69,7 @@ def main():
         with open(f'data/orderbook-{args.exchange}-{args.symbol}-{date}-{crawler_id}', 'a') as f:
             f.write(data + '\n')
 
-        k = f'{args.exchange}_{args.symbol}_{crawler_id[:4]}'
-        start_thread(write_metric, (db, 'orderbook_size', k, size))
-        start_thread(write_metric, (db, 'orderbook_latency', k, time_elapsed))
+        start_thread(write_point, (db, args.exchange, args.symbol, crawler_id, size, time_elapsed))
 
         print(f'got {size} bytes in {time_elapsed:.2f} s')
         time.sleep(max(0, args.interval - time_elapsed))
