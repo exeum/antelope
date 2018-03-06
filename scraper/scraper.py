@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import threading
 import time
 import uuid
 
@@ -29,12 +28,6 @@ def write_point(db, exchange, symbol, crawler_id, size, latency):
         }
     }
     db.write_points([point], time_precision='s')
-
-
-def start_thread(target, args):
-    thread = threading.Thread(target=target, args=args)
-    thread.daemon = True
-    thread.start()
 
 
 @retry(stop_max_attempt_number=RETRIES)
@@ -69,7 +62,7 @@ def main():
         with open(f'data/orderbook-{args.exchange}-{args.symbol}-{date}-{crawler_id}', 'a') as f:
             f.write(data + '\n')
 
-        start_thread(write_point, (db, args.exchange, args.symbol, crawler_id, size, time_elapsed))
+        write_point(db, args.exchange, args.symbol, crawler_id, size, time_elapsed)
 
         print(f'got {size} bytes in {time_elapsed:.2f} s')
         time.sleep(max(0, args.interval - time_elapsed))
