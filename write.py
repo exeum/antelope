@@ -30,8 +30,10 @@ def write_points(db, points):
 
 def make_point(exchange, symbol, kind, ts, price):
     return {
-        'measurement': f'{exchange}_{symbol}',
+        'measurement': 'price',
         'tags': {
+            'exchange': exchange,
+            'symbol': symbol,
             'kind': kind
         },
         'time': int(ts),
@@ -42,40 +44,40 @@ def make_point(exchange, symbol, kind, ts, price):
 
 
 def parse_archive_filename(filename):
-    tokens = pathlib.Path(filename).stem.split('-')
-    return tokens[1], tokens[2]
+    _, exchange, symbol, _, crawler_id = pathlib.Path(filename).stem.split('-')
+    return exchange, symbol, crawler_id
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('archive')
+    parser.add_argument('archives', nargs='+')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='prices')
     parser.add_argument('--batch-size', type=int, default=5000)
     args = parser.parse_args()
-
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
-    exchange, symbol = parse_archive_filename(args.archive)
-    get_prices = {
-        'gemini': get_prices_type1,
-        'bitfinex': get_prices_type1,
-        'binance': get_prices_type2,
-        'okex': get_prices_type2
-    }[exchange]
-    points = []
-
-    with gzip.open(args.archive, 'rt') as f:
-        for line in f:
-            obj = json.loads(line)
-            ts = obj['__timestamp__']
-            bids, asks = get_prices(obj)
-            bid = make_point(exchange, symbol, 'bid', ts, max(bids))
-            ask = make_point(exchange, symbol, 'ask', ts, min(asks))
-            points.extend([bid, ask])
-            if len(points) >= args.batch_size:
-                write_points(db, points)
-                points = []
-        write_points(db, points)
+    for filename in args.archives:
+        exchange, symbol, crawler_id = parse_archive_filename(filename)
+        get_prices = {
+            'gemini': get_prices_type1,
+            'bitfinex': get_prices_type1,
+            'binance': get_prices_type2,
+            'okex': get_prices_type2
+        }[exchange]
+        print(f'processing {exchange} {symbol} ({crawler_id})')
+        with gzip.open(filename, 'rt') as f:
+            points = []
+            for line in f:
+                obj = json.loads(line)
+                ts = obj['__timestamp__']
+                bids, asks = get_prices(obj)
+                bid = make_point(exchange, symbol, 'bid', ts, max(bids))
+                ask = make_point(exchange, symbol, 'ask', ts, min(asks))
+                points.extend([bid, ask])
+                if len(points) >= args.batch_size:
+                    write_points(db, points)
+                    points = []
+            write_points(db, points)
 
 
 if __name__ == '__main__':
