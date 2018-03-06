@@ -38,7 +38,7 @@ def main():
     parser.add_argument('archives', nargs='+')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='prices')
-    parser.add_argument('--batch-size', type=int, default=5000)
+    parser.add_argument('--batch-size', type=int, default=10000)
     args = parser.parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     for filename in args.archives:
