@@ -8,24 +8,32 @@ import uuid
 
 import influxdb
 import requests
+import retrying
+
+TIMEOUT = 5
+RETRIES = 3
 
 
 def write_metric(db, measurement, k, v):
-    db.write_points([
-        {
-            'measurement': measurement,
-            'time': int(time.time()),
-            'fields': {
-                k: float(v)
-            }
+    point = {
+        'measurement': measurement,
+        'time': int(time.time()),
+        'fields': {
+            k: float(v)
         }
-    ], time_precision='s')
+    }
+    db.write_points([point], time_precision='s')
 
 
 def start_thread(target, args):
     thread = threading.Thread(target=target, args=args)
     thread.daemon = True
     thread.start()
+
+
+@retry(stop_max_attempt_number=RETRIES)
+def get(url):
+    return requests.get(url, timeout=TIMEOUT)
 
 
 def main():
@@ -35,16 +43,15 @@ def main():
     parser.add_argument('url')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='crawler')
-    parser.add_argument('--timeout', type=int, default=10)
     parser.add_argument('--interval', type=float, default=1)
     args = parser.parse_args()
 
-    db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=args.timeout)
+    db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     crawler_id = uuid.uuid4().hex
 
     while True:
         time_start = time.time()
-        res = requests.get(args.url, timeout=args.timeout)
+        res = get(args.url)
         size = len(res.text)
         obj = res.json()
         time_end = time.time()
