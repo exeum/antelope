@@ -33,7 +33,8 @@ def start_thread(target, args):
 
 @retry(stop_max_attempt_number=RETRIES)
 def get(url):
-    return requests.get(url, timeout=TIMEOUT)
+    res = requests.get(url, timeout=TIMEOUT)
+    return res.json(), len(res.text)
 
 
 def main():
@@ -51,9 +52,7 @@ def main():
 
     while True:
         time_start = time.time()
-        res = get(args.url)
-        size = len(res.text)
-        obj = res.json()
+        obj, size = get(args.url)
         time_end = time.time()
         time_elapsed = time_end - time_start
 
