@@ -11,12 +11,14 @@ TIMEOUT = 5
 
 # Gemini, Bitfinex
 def get_prices_type1(obj):
-    return {order['price'] for order in obj['bids']}, {order['price'] for order in obj['asks']}
+    return ({order['price'] for order in obj['bids']},
+            {order['price'] for order in obj['asks']})
 
 
 # Binance, Okex
 def get_prices_type2(obj):
-    return {order[0] for order in obj['bids']}, {order[0] for order in obj['asks']}
+    return ({order[0] for order in obj['bids']},
+            {order[0] for order in obj['asks']})
 
 
 def write_points(db, points):
