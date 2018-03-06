@@ -8,7 +8,7 @@ import uuid
 
 import influxdb
 import requests
-import retrying
+from retrying import retry
 
 TIMEOUT = 5
 RETRIES = 3
