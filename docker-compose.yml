@@ -1,8 +1,26 @@
 version: '3'
 services:
+  gemini-btcusd:
+    image: exeum/antelope-scraper
+    command: gemini btcusd https://api.gemini.com/v1/book/btcusd
+    volumes:
+      - orderbooks:/orderbooks
+
+  bitfinex-btcusd:
+    image: exeum/antelope-scraper
+    command: bitfinex btcusd https://api.bitfinex.com/v1/book/btcusd --interval 3
+    volumes:
+      - orderbooks:/orderbooks
+
   okex-ltcbtc:
     image: exeum/antelope-scraper
     command: okex ltcbtc https://www.okex.com/api/v1/depth.do?symbol=ltc_btc
+    volumes:
+      - orderbooks:/orderbooks
+
+  binance-ltcbtc:
+    image: exeum/antelope-scraper
+    command: binance ltcbtc https://www.binance.com/api/v1/depth?symbol=LTCBTC
     volumes:
       - orderbooks:/orderbooks
 
