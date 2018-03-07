@@ -50,16 +50,18 @@ def main():
     crawler_id = uuid.uuid4().hex
 
     while True:
+        print('hi')
         time_start = time.time()
         obj, size = get(args.url)
         time_end = time.time()
         time_elapsed = time_end - time_start
 
+        print('there')
         obj['__timestamp__'] = int(time_end)
         data = json.dumps(obj, separators=(',', ':'))
 
         date = time.strftime('%Y%m%d')
-        with open(f'data/orderbook-{args.exchange}-{args.symbol}-{date}-{crawler_id}', 'at') as f:
+        with open(f'/orderbooks/orderbook-{args.exchange}-{args.symbol}-{date}-{crawler_id}', 'at') as f:
             f.write(data + '\n')
 
         write_point(db, args.exchange, args.symbol, crawler_id, size, time_elapsed)

@@ -1,6 +1,6 @@
-FROM ubuntu
+FROM python:3
 
-WORKDIR /root
+WORKDIR /usr/src/app
 COPY . .
 
-ENTRYPOINT ["./deliverer.sh"]
+ENTRYPOINT ["./deliverer.py"]

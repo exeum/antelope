@@ -1,6 +1,6 @@
-FROM python
+FROM python:3
 
-WORKDIR /root
+WORKDIR /usr/src/app
 COPY . .
 RUN pip install -r requirements.txt
 

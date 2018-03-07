@@ -2,6 +2,7 @@
 
 import gzip
 import shutil
+import time
 from pathlib import Path
 
 
@@ -12,7 +13,10 @@ def compress(filename):
 
 
 def main():
-    for path in Path('data').glob('orderbook-*'):Aa
+    print('wut')
+    time.sleep(60)
+    for path in Path('/orderbooks').glob('*'):
+        path = str(path)
         if not path.endswith('.gz') and time.strftime('%Y%m%d') not in path:
             print(f'compressing {path}')
             compress(path)
