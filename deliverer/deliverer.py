@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import gzip
-import logging
 import shutil
 import time
 from pathlib import Path
@@ -14,14 +13,14 @@ def compress(filename):
 
 
 def main():
-    logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     while True:
-        logging.info('looking for order book archives')
-        for path in Path('/orderbooks').glob('*'):
-            path = str(path)
-            if not path.endswith('.gz') and time.strftime('%Y%m%d') not in path:
-                logging.info(f'compressing {path}')
+        paths = [str(path) for path in Path('/orderbooks').glob('orderbook-*[!.gz]')]
+        print(f'currently {len(paths)} order book logs')
+        for path in paths:
+            if time.strftime('%Y%m%d') not in path:
+                print(f'compressing {path}')
                 compress(path)
+                # TODO: Send archive to S3; remove both from host
         time.sleep(60)
 
 

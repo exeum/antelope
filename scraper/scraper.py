@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import logging
 import time
 import uuid
 
@@ -38,8 +37,6 @@ def get(url):
 
 
 def main():
-    logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('exchange')
     parser.add_argument('symbol')
@@ -67,7 +64,7 @@ def main():
 
         write_point(db, args.exchange, args.symbol, crawler_id, size, time_elapsed)
 
-        logging.info(f'got {size} bytes in {time_elapsed:.2f} s')
+        print(f'got {size} bytes in {time_elapsed:.2f} s')
         time.sleep(max(0, args.interval - time_elapsed))
 
 
