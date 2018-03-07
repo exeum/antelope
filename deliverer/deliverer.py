@@ -14,14 +14,14 @@ def compress(filename):
 
 
 def main():
-	logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
-	while True:
-		for path in Path('/orderbooks').glob('*'):
-			path = str(path)
-			if not path.endswith('.gz') and time.strftime('%Y%m%d') not in path:
-				logging.info(f'compressing {path}')
-				compress(path)
-		time.sleep(60)
+    logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
+    while True:
+        for path in Path('/orderbooks').glob('*'):
+            path = str(path)
+            if not path.endswith('.gz') and time.strftime('%Y%m%d') not in path:
+                logging.info(f'compressing {path}')
+                compress(path)
+        time.sleep(60)
 
 
 if __name__ == '__main__':
