@@ -1,18 +1,18 @@
-.PHONY: scraper deliverer deploy rm ps
+.PHONY: build push deploy rm ps
 
-scraper:
-	cd scraper && \
-	docker build -t exeum/antelope-scraper .
+build:
+	( cd scraper && docker build -t exeum/antelope-scraper . )
+	( cd deliverer && docker build -t exeum/antelope-deliverer . )
 
-deliverer:
-	cd deliverer && \
-	docker build -t exeum/antelope-deliverer .
+push:
+	docker push exeum/antelope-scraper
+	docker push exeum/antelope-deliverer
 
 deploy:
-	docker stack deploy -c docker-stack.yml crawler
+	docker stack deploy -c docker-stack.yml antelope
 
 rm:
-	docker stack rm crawler
+	docker stack rm antelope
 
 ps:
-	docker stack ps --no-trunc crawler
+	docker stack ps --no-trunc antelope
