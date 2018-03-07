@@ -3,7 +3,7 @@
 import argparse
 import gzip
 import json
-import pathlib
+from pathlib import Path
 
 import influxdb
 
@@ -29,7 +29,7 @@ def write_points(db, points):
 
 
 def parse_archive_filename(filename):
-    _, exchange, symbol, _, crawler_id = pathlib.Path(filename).stem.split('-')
+    _, exchange, symbol, _, crawler_id = Path(filename).stem.split('-')
     return exchange, symbol, crawler_id
 
 
