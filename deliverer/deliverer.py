@@ -16,6 +16,7 @@ def compress(filename):
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     while True:
+        logging.info('looking for order book archives')
         for path in Path('/orderbooks').glob('*'):
             path = str(path)
             if not path.endswith('.gz') and time.strftime('%Y%m%d') not in path:
