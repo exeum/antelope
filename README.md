@@ -4,8 +4,6 @@
 
 Antelope is a fast, scaleable and fault-tolerant system for collecting, processing and storing market data from multiple cryptocurrency exchanges. It aims to be as simple as possible.
 
-## Order book archive filename format
+## Data storage
 
-```
-orderbook-<exchange>-<symbol>-<yyyymmdd>-<uuid>.gz
-```
+Order book archives are stored in S3 as `orderbook-<exchange>-<symbol>-<yyyymmdd>-<uuid>.gz`.
