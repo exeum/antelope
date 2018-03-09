@@ -1,0 +1,7 @@
+sudo: required
+language: python
+services:
+  - docker
+script:
+  - ( cd scraper && docker build -t antelope-scraper . )
+  - ( cd deliverer && docker build -t antelope-deliverer . )
