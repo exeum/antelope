@@ -16,7 +16,7 @@ def get_prices_type1(obj):
             {float(order['price']) for order in obj['asks']})
 
 
-# Binance, Okex
+# Binance, Okex, GDAX
 def get_prices_type2(obj):
     return ({float(order[0]) for order in obj['bids']},
             {float(order[0]) for order in obj['asks']})
@@ -47,7 +47,8 @@ def main():
             'gemini': get_prices_type1,
             'bitfinex': get_prices_type1,
             'binance': get_prices_type2,
-            'okex': get_prices_type2
+            'okex': get_prices_type2,
+            'gdax': get_prices_type2
         }[exchange]
         print(f'processing {exchange} {symbol} ({crawler_id})')
         with gzip.open(filename, 'rt') as f:
