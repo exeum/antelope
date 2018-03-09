@@ -20,7 +20,7 @@ def main():
             if time.strftime('%Y%m%d') not in path:
                 print(f'compressing {path}')
                 compress(path)
-                # TODO: Send archive to S3; remove both from host
+                # Send archive to S3; remove both from host...
         time.sleep(60)
 
 
