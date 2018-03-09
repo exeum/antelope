@@ -4,9 +4,9 @@
 
 Antelope is a fast, scaleable and fault-tolerant system for collecting, processing and storing market data from multiple cryptocurrency exchanges. It aims to be as simple as possible.
 
-## Overview (WIP)
+## Overview
 
-Objective: get per-second market data for a large number of exchanges and currency pairs
+Objective: get per-second market data for a large number of exchanges and currency pairs.
 
 Scrapers write raw order book data to logs (rotated daily), and deliverers send compressed logs from previous days to S3 (simply gzipping the logs makes them around 10x smaller). They run in a Docker swarm, and are organised in a way that minimizes the number of scrapers for an exchange on on any one host (to avoid API rate limitng). Scrapers are replicated just in case.
 
