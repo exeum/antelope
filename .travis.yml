@@ -4,10 +4,12 @@ python:
   - "3.6"
 services:
   - docker
+install:
+  - pip install pylint
 script:
-  - pip install pylint radon
-  - pylint *.py && STATUS=0 || STATUS=$?
+  - find . -name '*.py' | xargs pylint && STATUS=0 || STATUS=$?
   - test $(( STATUS & 3 )) -ne 0 && exit $STATUS
-  - radon cc -a .
   - ( cd scraper && docker build -t antelope-scraper . )
   - ( cd deliverer && docker build -t antelope-deliverer . )
+notifications:
+  slack: exeum-foundation:N5NC7XlSG6BlY85rF3aILVG6
