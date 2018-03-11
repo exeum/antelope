@@ -4,6 +4,8 @@
 
 Antelope is a fast, scaleable and fault-tolerant system for collecting, processing and storing market data from multiple cryptocurrency exchanges. It aims to be as simple as possible.
 
+Work in progress.
+
 ## Overview
 
 Objective: get per-second market data for a large number of exchanges and currency pairs.
