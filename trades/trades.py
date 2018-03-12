@@ -39,13 +39,20 @@ def parse_args():
     return parser.parse_args()
 
 
+def wrap_data(data):
+    return json.dumps({
+        'timestamp': time.time(),
+        'data': json.loads(data)
+    }, separators=(',', ':'))
+
+
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
-    crawler_id = uuid.uuid4().hex
+    scraper_id = uuid.uuid4().hex
 
-    filename = f'/data/trades-{args.exchange}-{args.symbol}-{crawler_id}'
+    filename = f'/data/trades-{args.exchange}-{args.symbol}-{scraper_id}'
     ws = websocket.create_connection(args.websocket)
     if args.request:
         ws.send(args.request)
@@ -53,13 +60,9 @@ def main():
         data = ws.recv()
         size = len(data)
         logging.info(f'got {size} bytes')
-        write_point(db, args.exchange, args.symbol, crawler_id, size)
-        obj = {
-            'timestamp': time.time(),
-            'data': json.loads(data)
-        }
+        write_point(db, args.exchange, args.symbol, scraper_id, size)
         with open(filename, 'at') as f:
-            f.write(json.dumps(obj) + '\n')
+            f.write(wrap_data(data) + '\n')
 
 
 if __name__ == '__main__':

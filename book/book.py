@@ -49,6 +49,13 @@ def parse_args():
     return parser.parse_args()
 
 
+def wrap_data(data):
+    return json.dumps({
+        'timestamp': time.time(),
+        'data': json.loads(data)
+    }, separators=(',', ':'))
+
+
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
