@@ -32,7 +32,7 @@ def write_point(db, measurement, exchange, symbol, scraper_id, size):
 
 
 @retry(stop_max_attempt_number=RETRIES)
-def get(url):
+def http_get(url):
     return requests.get(url, timeout=TIMEOUT).text
 
 
@@ -40,7 +40,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('exchange')
     parser.add_argument('symbol')
-    parser.add_argument('url')
+    parser.add_argument('uri')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
     parser.add_argument('--interval', type=float, default=1)
@@ -68,7 +68,7 @@ def main():
     filename = f'/data/{kind}-{args.exchange}-{args.symbol}-{scraper_id}'
 
     while True:
-        data = get(args.url)
+        data = http_get(args.uri)
 
         size = len(data)
         logging.info(f'got {size} bytes')

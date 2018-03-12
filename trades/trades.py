@@ -9,7 +9,7 @@ import uuid
 import influxdb
 import websocket
 
-TIMEOUT = 10
+TIMEOUT = 5
 
 
 def write_point(db, measurement, exchange, symbol, scraper_id, size):
@@ -32,7 +32,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('exchange')
     parser.add_argument('symbol')
-    parser.add_argument('websocket')
+    parser.add_argument('uri')
     parser.add_argument('request')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
@@ -59,7 +59,7 @@ def main():
     kind = 'trades'
     filename = f'/data/{kind}-{args.exchange}-{args.symbol}-{scraper_id}'
 
-    ws = websocket.create_connection(args.websocket)
+    ws = websocket.create_connection(args.uri)
     if args.request:
         ws.send(args.request)
 
