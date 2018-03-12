@@ -15,9 +15,9 @@ TIMEOUT = 5
 RETRIES = 3
 
 
-def write_point(db, exchange, symbol, scraper_id, size, latency):
+def write_point(db, measurement, exchange, symbol, scraper_id, size):
     point = {
-        'measurement': 'book',
+        'measurement': measurement,
         'tags': {
             'exchange': exchange,
             'symbol': symbol,
@@ -26,7 +26,6 @@ def write_point(db, exchange, symbol, scraper_id, size, latency):
         'time': time.time(),
         'fields': {
             'size': float(size),
-            'latency': float(latency)
         }
     }
     db.write_points([point])
@@ -65,20 +64,19 @@ def main():
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     scraper_id = uuid.uuid4().hex
-    filename = f'/data/book-{args.exchange}-{args.symbol}-{scraper_id}'
+    kind = 'book'
+    filename = f'/data/{kind}-{args.exchange}-{args.symbol}-{scraper_id}'
 
     while True:
-        time_start = time.time()
         data = get(args.url)
+
         size = len(data)
-        time_end = time.time()
-        time_elapsed = time_end - time_start
-        logging.info(f'got {size} bytes in {time_elapsed:.2f} s')
+        logging.info(f'got {size} bytes')
+        write_point(db, kind, args.exchange, args.symbol, scraper_id, size)
         append_line(filename, wrap_data(data))
-        write_point(db, args.exchange, args.symbol, scraper_id, size, time_elapsed)
-        time_remaining = max(0, args.interval - time_elapsed)
+
         random_delay = args.interval * random()
-        time.sleep(time_remaining + random_delay)
+        time.sleep(args.interval + random_delay)
 
 
 if __name__ == '__main__':

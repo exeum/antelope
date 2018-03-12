@@ -12,9 +12,9 @@ import websocket
 TIMEOUT = 10
 
 
-def write_point(db, exchange, symbol, scraper_id, size):
+def write_point(db, measurement, exchange, symbol, scraper_id, size):
     point = {
-        'measurement': 'trades',
+        'measurement': measurement,
         'tags': {
             'exchange': exchange,
             'symbol': symbol,
@@ -56,16 +56,19 @@ def main():
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     scraper_id = uuid.uuid4().hex
-    filename = f'/data/trades-{args.exchange}-{args.symbol}-{scraper_id}'
+    kind = 'trades'
+    filename = f'/data/{kind}-{args.exchange}-{args.symbol}-{scraper_id}'
 
     ws = websocket.create_connection(args.websocket)
     if args.request:
         ws.send(args.request)
+
     while True:
         data = ws.recv()
+
         size = len(data)
         logging.info(f'got {size} bytes')
-        write_point(db, args.exchange, args.symbol, scraper_id, size)
+        write_point(db, kind, args.exchange, args.symbol, scraper_id, size)
         append_line(filename, wrap_data(data))
 
 
