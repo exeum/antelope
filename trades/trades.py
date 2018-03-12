@@ -46,13 +46,18 @@ def wrap_data(data):
     }, separators=(',', ':'))
 
 
+def append_line(filename, line):
+    with open(filename, 'at') as f:
+        f.write(line + '\n')
+
+
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     scraper_id = uuid.uuid4().hex
-
     filename = f'/data/trades-{args.exchange}-{args.symbol}-{scraper_id}'
+
     ws = websocket.create_connection(args.websocket)
     if args.request:
         ws.send(args.request)
@@ -61,8 +66,7 @@ def main():
         size = len(data)
         logging.info(f'got {size} bytes')
         write_point(db, args.exchange, args.symbol, scraper_id, size)
-        with open(filename, 'at') as f:
-            f.write(wrap_data(data) + '\n')
+        append_line(filename, wrap_data(data))
 
 
 if __name__ == '__main__':

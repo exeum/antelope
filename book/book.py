@@ -34,8 +34,7 @@ def write_point(db, exchange, symbol, scraper_id, size, latency):
 
 @retry(stop_max_attempt_number=RETRIES)
 def get(url):
-    res = requests.get(url, timeout=TIMEOUT)
-    return res.json(), len(res.text)
+    return requests.get(url, timeout=TIMEOUT).text
 
 
 def parse_args():
@@ -56,26 +55,26 @@ def wrap_data(data):
     }, separators=(',', ':'))
 
 
+def append_line(filename, line):
+    with open(filename, 'at') as f:
+        f.write(line + '\n')
+
+
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     scraper_id = uuid.uuid4().hex
+    filename = f'/data/book-{args.exchange}-{args.symbol}-{scraper_id}'
 
     while True:
         time_start = time.time()
-        obj, size = get(args.url)
+        data = get(args.url)
+        size = len(data)
         time_end = time.time()
         time_elapsed = time_end - time_start
         logging.info(f'got {size} bytes in {time_elapsed:.2f} s')
-
-        with open(f'/data/book-{args.exchange}-{args.symbol}-{scraper_id}', 'at') as f:
-            data = json.dumps({
-                'timestamp': time_end,
-                'data': obj
-            }, separators=(',', ':'))
-            f.write(data + '\n')
-
+        append_line(filename, wrap_data(data))
         write_point(db, args.exchange, args.symbol, scraper_id, size, time_elapsed)
         time_remaining = max(0, args.interval - time_elapsed)
         random_delay = args.interval * random()
