@@ -9,11 +9,19 @@ from pathlib import Path
 
 import boto3
 
+INTERVAL = 60
+
 
 def compress(filename_in, filename_out):
+    print(f'compressing {filename_in} as {filename_out}')
     with open(filename_in, 'rb') as fin:
         with gzip.open(filename_out, 'wb') as fout:
             shutil.copyfileobj(fin, fout)
+
+
+def remove(filename):
+    print(f'removing {filename}')
+    os.remove(filename)
 
 
 def parse_args():
@@ -32,14 +40,11 @@ def main():
         for path in paths:
             if time.strftime('%Y%m%d') not in path:
                 path_gz = path + '.gz'
-                print(f'compressing {path} as {path_gz}')
                 compress(path, path_gz)
                 s3.upload_file(path_gz, args.bucket, path_gz)
-                print(f'removing {path}')
-                os.remove(path)
-                print(f'removing {path_gz}')
-                os.remove(path_gz)
-        time.sleep(60)
+                remove(path)
+                remove(path_gz)
+        time.sleep(INTERVAL)
 
 
 if __name__ == '__main__':
