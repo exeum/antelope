@@ -15,7 +15,3 @@ Scrapers write raw order book data to logs (rotated daily), and deliverers send 
 Data in S3 is parsed and passed forward for consumption. Easily visualizable data (e.g. market prices) goes to InfluxDB; order book data goes to TimescaleDB. Make all entries unique and just push everything.
 
 No need for complex redundancy setups since the raw data is safely in S3. Databases can be rebuilt with a single command in case of apocalypse.
-
-## Data storage
-
-Order book archives are stored in S3 as `orderbook-<exchange>-<symbol>-<yyyymmdd>-<uuid>.gz`.
