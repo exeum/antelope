@@ -4,6 +4,7 @@ import argparse
 import json
 import time
 import uuid
+from random import random
 
 import influxdb
 import requests
@@ -57,6 +58,7 @@ def main():
         obj, size = get(args.url)
         time_end = time.time()
         time_elapsed = time_end - time_start
+        print(f'got {size} bytes in {time_elapsed:.2f} s')
 
         obj['__timestamp__'] = int(time_end)
         data = json.dumps(obj, separators=(',', ':'))
@@ -64,9 +66,10 @@ def main():
         with open(f'/orderbooks/orderbook-{args.exchange}-{args.symbol}-{date}-{crawler_id}', 'at') as f:
             f.write(data + '\n')
 
-        print(f'got {size} bytes in {time_elapsed:.2f} s')
         write_point(db, args.exchange, args.symbol, crawler_id, size, time_elapsed)
-        time.sleep(max(0, args.interval - time_elapsed))
+        time_remaining = max(0, args.interval - time_elapsed)
+        random_delay = args.interval * random()
+        time.sleep(time_remaining + random_delay)
 
 
 if __name__ == '__main__':
