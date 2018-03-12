@@ -33,13 +33,17 @@ def parse_archive_filename(filename):
     return exchange, symbol, crawler_id
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('archives', nargs='+')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='market')
     parser.add_argument('--batch-size', type=int, default=1000)
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     for filename in args.archives:
         exchange, symbol, crawler_id = parse_archive_filename(filename)
