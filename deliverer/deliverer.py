@@ -42,8 +42,8 @@ def main():
                 path_gz = path + '.gz'
                 compress(path, path_gz)
                 s3.upload_file(path_gz, args.bucket, path_gz)
-                remove(path)
                 remove(path_gz)
+                remove(path)
         time.sleep(INTERVAL)
 
 
