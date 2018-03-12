@@ -16,11 +16,15 @@ def compress(filename_in, filename_out):
             shutil.copyfileobj(fin, fout)
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--region', default='us-east-1')
     parser.add_argument('--bucket', default='antelope')
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
     s3 = boto3.client('s3', region_name=args.region)
     while True:
         paths = [str(path) for path in Path('/orderbooks').glob('orderbook-*[!.gz]')]

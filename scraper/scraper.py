@@ -36,7 +36,7 @@ def get(url):
     return res.json(), len(res.text)
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('exchange')
     parser.add_argument('symbol')
@@ -44,8 +44,11 @@ def main():
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
     parser.add_argument('--interval', type=float, default=1)
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def main():
+    args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     crawler_id = uuid.uuid4().hex
 
