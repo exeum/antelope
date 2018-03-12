@@ -2,6 +2,7 @@
 
 import argparse
 import gzip
+import logging
 import os
 import shutil
 import time
@@ -13,14 +14,14 @@ INTERVAL = 60
 
 
 def compress(filename_in, filename_out):
-    print(f'compressing {filename_in} as {filename_out}')
+    logging.info(f'compressing {filename_in} as {filename_out}')
     with open(filename_in, 'rb') as fin:
         with gzip.open(filename_out, 'wb') as fout:
             shutil.copyfileobj(fin, fout)
 
 
 def remove(filename):
-    print(f'removing {filename}')
+    logging.info(f'removing {filename}')
     os.remove(filename)
 
 
@@ -32,11 +33,12 @@ def parse_args():
 
 
 def main():
+    logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     s3 = boto3.client('s3', region_name=args.region)
     while True:
         paths = [str(path) for path in Path('/data').glob('orderbook-*[!.gz]')]
-        print(f'currently {len(paths)} order book logs')
+        logging.info(f'currently {len(paths)} order book logs')
         for path in paths:
             if time.strftime('%Y%m%d') not in path:
                 path_gz = path + '.gz'

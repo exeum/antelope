@@ -3,6 +3,7 @@
 import argparse
 import gzip
 import json
+import logging
 from pathlib import Path
 
 import influxdb
@@ -24,7 +25,7 @@ def get_prices_type2(obj):
 
 def write_points(db, points):
     if points:
-        print(f'writing {len(points)} points')
+        logging.info(f'writing {len(points)} points')
         db.write_points(points, time_precision='s')
 
 
@@ -43,6 +44,7 @@ def parse_args():
 
 
 def main():
+    logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     for filename in args.archives:
@@ -54,7 +56,7 @@ def main():
             'okex': get_prices_type2,
             'gdax': get_prices_type2
         }[exchange]
-        print(f'processing {exchange} {symbol} ({crawler_id})')
+        logging.info(f'processing {exchange} {symbol} ({crawler_id})')
         with gzip.open(filename, 'rt') as f:
             points = []
             for line in f:

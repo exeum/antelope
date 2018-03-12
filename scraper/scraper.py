@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import logging
 import time
 import uuid
 from random import random
@@ -49,6 +50,7 @@ def parse_args():
 
 
 def main():
+    logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     crawler_id = uuid.uuid4().hex
@@ -58,7 +60,7 @@ def main():
         obj, size = get(args.url)
         time_end = time.time()
         time_elapsed = time_end - time_start
-        print(f'got {size} bytes in {time_elapsed:.2f} s')
+        logging.info(f'got {size} bytes in {time_elapsed:.2f} s')
 
         obj['__timestamp__'] = int(time_end)
         data = json.dumps(obj, separators=(',', ':'))
