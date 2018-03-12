@@ -11,6 +11,7 @@ from pathlib import Path
 import boto3
 
 INTERVAL = 60
+EXPIRY = 60 * 60
 
 
 def compress(filename_in, filename_out):
@@ -18,6 +19,10 @@ def compress(filename_in, filename_out):
     with open(filename_in, 'rb') as fin:
         with gzip.open(filename_out, 'wb') as fout:
             shutil.copyfileobj(fin, fout)
+
+
+def file_age(filename):
+    return time.time() - os.path.getmtime(filename)
 
 
 def remove(filename):
@@ -40,7 +45,7 @@ def main():
         paths = [str(path) for path in Path('/data').glob('orderbook-*[!.gz]')]
         logging.info(f'currently {len(paths)} order book logs')
         for path in paths:
-            if time.strftime('%Y%m%d') not in path:
+            if file_age(path) > EXPIRY:
                 path_gz = path + '.gz'
                 compress(path, path_gz)
                 s3.upload_file(path_gz, args.bucket, path_gz)

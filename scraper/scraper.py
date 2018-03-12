@@ -64,8 +64,7 @@ def main():
 
         obj['__timestamp__'] = int(time_end)
         data = json.dumps(obj, separators=(',', ':'))
-        date = time.strftime('%Y%m%d')
-        with open(f'/data/orderbook-{args.exchange}-{args.symbol}-{date}-{crawler_id}', 'at') as f:
+        with open(f'/data/orderbook-{args.exchange}-{args.symbol}-{crawler_id}', 'at') as f:
             f.write(data + '\n')
 
         write_point(db, args.exchange, args.symbol, crawler_id, size, time_elapsed)
