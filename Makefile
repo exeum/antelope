@@ -1,9 +1,6 @@
-.PHONY: build push
+.PHONY: build
 
 build:
-	( cd scraper && docker build -t exeum/antelope-scraper . )
+	( cd book && docker build -t exeum/antelope-book . )
+	( cd trades && docker build -t exeum/antelope-trades . )
 	( cd deliverer && docker build -t exeum/antelope-deliverer . )
-
-push:
-	docker push exeum/antelope-scraper
-	docker push exeum/antelope-deliverer
