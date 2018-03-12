@@ -1,60 +1,60 @@
 version: '3'
 services:
-  gdax-btcusd:
+  gdax_btcusd:
     image: exeum/antelope-scraper
     command: gdax btcusd https://api.gdax.com/products/BTC-USD/book?level=2
     volumes:
       - orderbooks:/orderbooks
 
-  gemini-btcusd:
+  gemini_btcusd:
     image: exeum/antelope-scraper
     command: gemini btcusd https://api.gemini.com/v1/book/btcusd
     volumes:
       - orderbooks:/orderbooks
 
-  gemini-ethusd:
+  gemini_ethusd:
     image: exeum/antelope-scraper
     command: gemini ethusd https://api.gemini.com/v1/book/ethusd
     volumes:
       - orderbooks:/orderbooks
 
-  gemini-ethbtc:
+  gemini_ethbtc:
     image: exeum/antelope-scraper
     command: gemini ethbtc https://api.gemini.com/v1/book/ethbtc
     volumes:
       - orderbooks:/orderbooks
 
-  bitfinex-btcusd:
+  bitfinex_btcusd:
     image: exeum/antelope-scraper
     command: bitfinex btcusd https://api.bitfinex.com/v1/book/btcusd --interval 3
     volumes:
       - orderbooks:/orderbooks
 
-  okex-ltcbtc:
+  okex_ltcbtc:
     image: exeum/antelope-scraper
     command: okex ltcbtc https://www.okex.com/api/v1/depth.do?symbol=ltc_btc
     volumes:
       - orderbooks:/orderbooks
 
-  okex-ltceth:
+  okex_ltceth:
     image: exeum/antelope-scraper
     command: okex ltceth https://www.okex.com/api/v1/depth.do?symbol=ltc_eth
     volumes:
       - orderbooks:/orderbooks
 
-  binance-ltcbtc:
+  binance_ltcbtc:
     image: exeum/antelope-scraper
     command: binance ltcbtc https://www.binance.com/api/v1/depth?symbol=LTCBTC
     volumes:
       - orderbooks:/orderbooks
 
-  binance-ltceth:
+  binance_ltceth:
     image: exeum/antelope-scraper
     command: binance ltceth https://www.binance.com/api/v1/depth?symbol=LTCETH
     volumes:
       - orderbooks:/orderbooks
 
-  binance-ethbtc:
+  binance_ethbtc:
     image: exeum/antelope-scraper
     command: binance ethbtc https://www.binance.com/api/v1/depth?symbol=ETHBTC
     volumes:
