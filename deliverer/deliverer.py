@@ -42,7 +42,7 @@ def main():
     args = parse_args()
     s3 = boto3.client('s3', region_name=args.region)
     while True:
-        paths = [str(path) for path in Path('/data').glob('orderbook-*[!.gz]')]
+        paths = [str(path) for path in Path('/data').glob('*[!.gz]')]
         logging.info(f'currently {len(paths)} order book logs')
         for path in paths:
             if file_age(path) > EXPIRY:
