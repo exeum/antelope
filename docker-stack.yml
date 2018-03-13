@@ -1,0 +1,28 @@
+version: "3"
+services:
+  trades_bitfinex_btcusd:
+    image: exeum/antelope-scraper
+    command: trades bitfinex btcusd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"BTCUSD"}'
+    volumes:
+      - data:/data
+
+  book_bitfinex_btcusd:
+    image: exeum/antelope-scraper
+    command: book bitfinex btcusd https://api.bitfinex.com/v1/book/btcusd --interval 3
+    volumes:
+      - data:/data
+
+  trades_gdax_btcusd:
+    image: exeum/antelope-scraper
+    command: trades gdax btcusd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BTC-USD"],"channels":["matches"]}'
+    volumes:
+      - data:/data
+
+  book_gdax_btcusd:
+    image: exeum/antelope-scraper
+    command: book gdax btcusd https://api.gdax.com/products/BTC-USD/book?level=2
+    volumes:
+      - data:/data
+
+volumes:
+  data:

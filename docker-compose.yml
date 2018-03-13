@@ -1,62 +1,38 @@
-version: '3'
+version: "3"
 services:
-  gdax_btcusd:
-    image: exeum/antelope-book
-    command: gdax btcusd https://api.gdax.com/products/BTC-USD/book?level=2
+  trades_bitfinex_btcusd:
+    image: exeum/antelope-scraper
+    command: trades bitfinex btcusd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"BTCUSD"}'
     volumes:
       - data:/data
 
-  gemini_btcusd:
-    image: exeum/antelope-book
-    command: gemini btcusd https://api.gemini.com/v1/book/btcusd
+  book_gdax_btcusd:
+    image: exeum/antelope-scraper
+    command: book gdax btcusd https://api.gdax.com/products/BTC-USD/book?level=2
     volumes:
       - data:/data
 
-  gemini_ethusd:
-    image: exeum/antelope-book
-    command: gemini ethusd https://api.gemini.com/v1/book/ethusd
+  book_gemini_btcusd:
+    image: exeum/antelope-scraper
+    command: book gemini btcusd https://api.gemini.com/v1/book/btcusd
     volumes:
       - data:/data
 
-  gemini_ethbtc:
-    image: exeum/antelope-book
-    command: gemini ethbtc https://api.gemini.com/v1/book/ethbtc
+  book_bitfinex_btcusd:
+    image: exeum/antelope-scraper
+    command: book bitfinex btcusd https://api.bitfinex.com/v1/book/btcusd --interval 3
     volumes:
       - data:/data
 
-  bitfinex_btcusd:
-    image: exeum/antelope-book
-    command: bitfinex btcusd https://api.bitfinex.com/v1/book/btcusd --interval 3
+  book_okex_ltcbtc:
+    image: exeum/antelope-scraper
+    command: book okex ltcbtc https://www.okex.com/api/v1/depth.do?symbol=ltc_btc
     volumes:
       - data:/data
 
-  okex_ltcbtc:
-    image: exeum/antelope-book
-    command: okex ltcbtc https://www.okex.com/api/v1/depth.do?symbol=ltc_btc
-    volumes:
-      - data:/data
-
-  okex_ltceth:
-    image: exeum/antelope-book
-    command: okex ltceth https://www.okex.com/api/v1/depth.do?symbol=ltc_eth
-    volumes:
-      - data:/data
-
-  binance_ltcbtc:
-    image: exeum/antelope-book
-    command: binance ltcbtc https://www.binance.com/api/v1/depth?symbol=LTCBTC
-    volumes:
-      - data:/data
-
-  binance_ltceth:
-    image: exeum/antelope-book
-    command: binance ltceth https://www.binance.com/api/v1/depth?symbol=LTCETH
-    volumes:
-      - data:/data
-
-  binance_ethbtc:
-    image: exeum/antelope-book
-    command: binance ethbtc https://www.binance.com/api/v1/depth?symbol=ETHBTC
+  book_binance_ltcbtc:
+    image: exeum/antelope-scraper
+    command: book binance ltcbtc https://www.binance.com/api/v1/depth?symbol=LTCBTC
     volumes:
       - data:/data
 

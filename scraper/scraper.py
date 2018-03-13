@@ -77,8 +77,8 @@ def main():
     if urlparse(args.uri).scheme.startswith('ws'):
         logging.info(f'querying WebSocket endpoint {args.uri}')
         ws = websocket.create_connection(args.uri)
-        if args.request:
-            ws.send(args.request)
+        if args.subscribe:
+            ws.send(args.subscribe)
         while True:
             data = ws.recv()
 
