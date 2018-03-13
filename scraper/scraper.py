@@ -17,6 +17,10 @@ TIMEOUT = 5
 RETRIES = 3
 
 
+def time_ns():
+    return int(time.time() * 1000000000)
+
+
 def write_point(db, measurement, exchange, symbol, scraper_id, size):
     point = {
         'measurement': measurement,
@@ -25,7 +29,7 @@ def write_point(db, measurement, exchange, symbol, scraper_id, size):
             'symbol': symbol,
             'scraper_id': scraper_id
         },
-        'time': time.time(),
+        'time': time_ns(),
         'fields': {
             'size': float(size),
         }
@@ -47,7 +51,7 @@ def parse_args():
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
     parser.add_argument('--interval', type=float, default=1)
-    parser.add_argument('--request')
+    parser.add_argument('--subscribe')
     return parser.parse_args()
 
 
@@ -69,7 +73,6 @@ def main():
 
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     scraper_id = uuid.uuid4().hex
-    filename = f'/data/{args.kind}-{args.exchange}-{args.symbol}-{scraper_id}'
 
     if urlparse(args.uri).scheme.startswith('ws'):
         logging.info(f'querying WebSocket endpoint {args.uri}')
@@ -82,6 +85,8 @@ def main():
             size = len(data)
             logging.info(f'got {size} bytes')
             write_point(db, args.kind, args.exchange, args.symbol, scraper_id, size)
+            date = time.strftime('%Y%m%d')
+            filename = f'/data/{args.kind}-{args.exchange}-{args.symbol}-{date}-{scraper_id}'
             append_line(filename, wrap_data(data))
     else:
         logging.info(f'querying REST endpoint {args.uri}')
@@ -91,6 +96,8 @@ def main():
             size = len(data)
             logging.info(f'got {size} bytes')
             write_point(db, args.kind, args.exchange, args.symbol, scraper_id, size)
+            date = time.strftime('%Y%m%d')
+            filename = f'/data/{args.kind}-{args.exchange}-{args.symbol}-{date}-{scraper_id}'
             append_line(filename, wrap_data(data))
 
             random_delay = args.interval * random()
