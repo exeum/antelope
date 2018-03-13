@@ -8,7 +8,9 @@ services:
 
   book_bitfinex_btcusd:
     image: exeum/antelope-scraper
-    command: book bitfinex btcusd https://api.bitfinex.com/v1/book/btcusd --interval 3
+    command: book bitfinex btcusd https://api.bitfinex.com/v1/book/btcusd --interval 6
+    deploy:
+      replicas: 2
     volumes:
       - data:/data
 
@@ -20,7 +22,9 @@ services:
 
   book_gdax_btcusd:
     image: exeum/antelope-scraper
-    command: book gdax btcusd https://api.gdax.com/products/BTC-USD/book?level=2
+    command: book gdax btcusd https://api.gdax.com/products/BTC-USD/book?level=2 --interval 6
+    deploy:
+      replicas: 2
     volumes:
       - data:/data
 
