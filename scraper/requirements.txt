@@ -1,2 +1,4 @@
 influxdb
+requests
+retrying
 websocket-client

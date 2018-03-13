@@ -1,3 +1,0 @@
-influxdb
-requests
-retrying

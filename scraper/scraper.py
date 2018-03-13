@@ -6,9 +6,11 @@ import logging
 import time
 import uuid
 from random import random
+from urllib.parse import urlparse
 
 import influxdb
 import requests
+import websocket
 from retrying import retry
 
 TIMEOUT = 5
@@ -38,12 +40,14 @@ def http_get(url):
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('kind', choices=('book', 'trades'))
     parser.add_argument('exchange')
     parser.add_argument('symbol')
     parser.add_argument('uri')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
     parser.add_argument('--interval', type=float, default=1)
+    parser.add_argument('--request')
     return parser.parse_args()
 
 
@@ -62,21 +66,35 @@ def append_line(filename, line):
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
+
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     scraper_id = uuid.uuid4().hex
-    kind = 'book'
-    filename = f'/data/{kind}-{args.exchange}-{args.symbol}-{scraper_id}'
+    filename = f'/data/{args.kind}-{args.exchange}-{args.symbol}-{scraper_id}'
 
-    while True:
-        data = http_get(args.uri)
+    if urlparse(args.uri).scheme.startswith('ws'):
+        logging.info(f'querying WebSocket endpoint {args.uri}')
+        ws = websocket.create_connection(args.uri)
+        if args.request:
+            ws.send(args.request)
+        while True:
+            data = ws.recv()
 
-        size = len(data)
-        logging.info(f'got {size} bytes')
-        write_point(db, kind, args.exchange, args.symbol, scraper_id, size)
-        append_line(filename, wrap_data(data))
+            size = len(data)
+            logging.info(f'got {size} bytes')
+            write_point(db, args.kind, args.exchange, args.symbol, scraper_id, size)
+            append_line(filename, wrap_data(data))
+    else:
+        logging.info(f'querying REST endpoint {args.uri}')
+        while True:
+            data = http_get(args.uri)
 
-        random_delay = args.interval * random()
-        time.sleep(args.interval + random_delay)
+            size = len(data)
+            logging.info(f'got {size} bytes')
+            write_point(db, args.kind, args.exchange, args.symbol, scraper_id, size)
+            append_line(filename, wrap_data(data))
+
+            random_delay = args.interval * random()
+            time.sleep(args.interval + random_delay)
 
 
 if __name__ == '__main__':
