@@ -51,7 +51,7 @@ def parse_archive_filename(filename):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('archives', nargs='+')
+    parser.add_argument('--dir', default='/data')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
     parser.add_argument('--batch-size', type=int, default=1000)
@@ -62,8 +62,8 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
-    for filename in args.archives:
-        exchange, symbol, scraper_id = parse_archive_filename(filename)
+    for path in Path(args.dir).glob('*[!.gz]'):
+        exchange, symbol, scraper_id = parse_archive_filename(path)
         get_prices = {
             'gemini': get_prices_type1,
             'bitfinex': get_prices_type1,
@@ -72,7 +72,7 @@ def main():
             'gdax': get_prices_type2
         }[exchange]
         logging.info(f'processing {exchange} {symbol} ({scraper_id})')
-        with gzip.open(filename, 'rt') as f:
+        with gzip.open(path, 'rt') as f:
             points = []
             for line in f:
                     obj = json.loads(line)

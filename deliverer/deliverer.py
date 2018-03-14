@@ -15,7 +15,7 @@ EXPIRY = 60 * 60
 
 
 def compress(filename_in, filename_out):
-    logging.info(f'compressing {filename_in} as {filename_out}')
+    logging.info(f'compressing {filename_in}')
     with open(filename_in, 'rb') as fin:
         with gzip.open(filename_out, 'wb') as fout:
             shutil.copyfileobj(fin, fout)

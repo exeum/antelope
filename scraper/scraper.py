@@ -43,6 +43,18 @@ def http_get(url):
     return requests.get(url, timeout=TIMEOUT).text
 
 
+def wrap_data(data):
+    return json.dumps({
+        'timestamp': time.time(),
+        'data': json.loads(data)
+    }, separators=(',', ':'))
+
+
+def append_line(filename, line):
+    with open(filename, 'at') as f:
+        f.write(line + '\n')
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('kind', choices=('book', 'trades'))
@@ -54,18 +66,6 @@ def parse_args():
     parser.add_argument('--interval', type=float, default=1)
     parser.add_argument('--subscribe')
     return parser.parse_args()
-
-
-def wrap_data(data):
-    return json.dumps({
-        'timestamp': time.time(),
-        'data': json.loads(data)
-    }, separators=(',', ':'))
-
-
-def append_line(filename, line):
-    with open(filename, 'at') as f:
-        f.write(line + '\n')
 
 
 def main():
