@@ -21,10 +21,11 @@ def time_ns():
     return int(time.time() * 1000000000)
 
 
-def write_point(db, measurement, exchange, symbol, scraper_id, size):
+def write_point(db, kind, exchange, symbol, scraper_id, size):
     point = {
-        'measurement': measurement,
+        'measurement': 'scraper',
         'tags': {
+            'kind': kind,
             'exchange': exchange,
             'symbol': symbol,
             'scraper_id': scraper_id

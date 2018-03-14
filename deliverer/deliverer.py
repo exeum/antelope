@@ -32,6 +32,7 @@ def remove(filename):
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--dir', default='/data')
     parser.add_argument('--region', default='us-east-1')
     parser.add_argument('--bucket', default='antelope')
     return parser.parse_args()
@@ -40,16 +41,16 @@ def parse_args():
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
-    s3 = boto3.client('s3', region_name=args.region)
+    #s3 = boto3.client('s3', region_name=args.region)
     while True:
-        paths = [str(path) for path in Path('/data').glob('*[!.gz]')]
+        paths = [str(path) for path in Path(args.dir).glob('*[!.gz]')]
         logging.info(f'currently {len(paths)} order book logs')
         for path in paths:
             if file_age(path) > EXPIRY:
                 path_gz = path + '.gz'
                 compress(path, path_gz)
-                s3.upload_file(path_gz, args.bucket, path_gz)
-                remove(path_gz)
+                #s3.upload_file(path_gz, args.bucket, path_gz)
+                #remove(path_gz)
                 remove(path)
         time.sleep(INTERVAL)
 
