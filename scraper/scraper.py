@@ -89,6 +89,7 @@ def main():
             data = ws.recv()
             if not data:
                 logging.warning('skipping empty response')
+                continue
 
             size = len(data)
             logging.info(f'got {size} bytes')

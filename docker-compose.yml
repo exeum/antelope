@@ -2,37 +2,37 @@ version: "3"
 services:
   trades_bitfinex_btcusd:
     image: exeum/antelope-scraper
-    command: trades bitfinex btcusd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"BTCUSD"}'
+    command: trades bitfinex btc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"BTCUSD"}'
     volumes:
       - data:/data
 
   book_gdax_btcusd:
     image: exeum/antelope-scraper
-    command: book gdax btcusd https://api.gdax.com/products/BTC-USD/book?level=2
+    command: book gdax btc usd https://api.gdax.com/products/BTC-USD/book?level=2
     volumes:
       - data:/data
 
   book_gemini_btcusd:
     image: exeum/antelope-scraper
-    command: book gemini btcusd https://api.gemini.com/v1/book/btcusd
+    command: book gemini btc usd https://api.gemini.com/v1/book/btcusd
     volumes:
       - data:/data
 
   book_bitfinex_btcusd:
     image: exeum/antelope-scraper
-    command: book bitfinex btcusd https://api.bitfinex.com/v1/book/btcusd --interval 3
+    command: book bitfinex btc usd https://api.bitfinex.com/v1/book/btcusd --interval 3
     volumes:
       - data:/data
 
   book_okex_ltcbtc:
     image: exeum/antelope-scraper
-    command: book okex ltcbtc https://www.okex.com/api/v1/depth.do?symbol=ltc_btc
+    command: book okex ltc btc https://www.okex.com/api/v1/depth.do?symbol=ltc_btc
     volumes:
       - data:/data
 
   book_binance_ltcbtc:
     image: exeum/antelope-scraper
-    command: book binance ltcbtc https://www.binance.com/api/v1/depth?symbol=LTCBTC
+    command: book binance ltc btc https://www.binance.com/api/v1/depth?symbol=LTCBTC
     volumes:
       - data:/data
 
