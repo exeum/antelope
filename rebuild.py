@@ -23,12 +23,13 @@ def get_prices_type2(obj):
             {float(order[0]) for order in obj['asks']})
 
 
-def make_point(exchange, symbol, side, timestamp, price):
+def make_point(exchange, base, quote, side, timestamp, price):
     return {
         'measurement': 'price',
         'tags': {
             'exchange': exchange,
-            'symbol': symbol,
+            'base': base,
+            'quote': quote,
             'side': side
         },
         'time': int(timestamp) * 1000000000,
@@ -45,8 +46,8 @@ def write_points(db, points):
 
 
 def parse_archive_filename(filename):
-    kind, exchange, symbol, date, scraper_id = Path(filename).stem.split('-')
-    return exchange, symbol, scraper_id
+    kind, exchange, base, quote, date, scraper_id = Path(filename).stem.split('-')
+    return exchange, base, quote, scraper_id
 
 
 def parse_args():
@@ -63,7 +64,7 @@ def main():
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     for path in Path(args.dir).glob('*[!.gz]'):
-        exchange, symbol, scraper_id = parse_archive_filename(path)
+        exchange, base, quote, scraper_id = parse_archive_filename(path)
         get_prices = {
             'gemini': get_prices_type1,
             'bitfinex': get_prices_type1,
@@ -71,14 +72,14 @@ def main():
             'okex': get_prices_type2,
             'gdax': get_prices_type2
         }[exchange]
-        logging.info(f'processing {exchange} {symbol} ({scraper_id})')
+        logging.info(f'processing {exchange} {base}/{quote} ({scraper_id})')
         with gzip.open(path, 'rt') as f:
             points = []
             for line in f:
                     obj = json.loads(line)
                     bids, asks = get_prices(obj['data'])
-                    points.extend([make_point(exchange, symbol, 'bid', obj['timestamp'], max(bids)),
-                                   make_point(exchange, symbol, 'ask', obj['timestamp'], max(asks))])
+                    points.extend([make_point(exchange, base, quote, 'bid', obj['timestamp'], max(bids)),
+                                   make_point(exchange, base, quote, 'ask', obj['timestamp'], max(asks))])
                     if len(points) >= args.batch_size:
                         write_points(db, points)
                         points = []
