@@ -76,6 +76,7 @@ def parse_archive_filename(filename):
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    # TODO: just pass list of files after all; simpler for single archives
     parser.add_argument('--dir', default='.')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
@@ -87,12 +88,12 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
+    points = []
     for path in Path(args.dir).glob('*.gz'):
         kind, exchange, base, quote, scraper_id = parse_archive_filename(path)
-        logging.info(f'processing {exchange} {base}/{quote} ({scraper_id})')
+        logging.info(f'processing {exchange} {base}/{quote} {kind} ({scraper_id})')
         normalize_entry = globals()[f'normalize_{kind}_entry_{exchange}']
         with gzip.open(path, 'rt') as f:
-            points = []
             for line in f:
                 obj = json.loads(line)
                 timestamp, data = obj['timestamp'], obj['data']
