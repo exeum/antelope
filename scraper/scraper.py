@@ -92,6 +92,7 @@ def main():
     else:
         logging.info(f'querying REST endpoint {args.uri}')
         while True:
+            time_start = time.time()
             data = http_get(args.uri)
 
             size = len(data)
@@ -101,8 +102,10 @@ def main():
             filename = f'/data/{args.kind}-{args.exchange}-{args.symbol}-{date}-{scraper_id}'
             append_line(filename, wrap_data(data))
 
+            time_elapsed = time.time() - time_start
+            time_remaining = max(0, args.interval - time_elapsed)
             random_delay = args.interval * random()
-            time.sleep(args.interval + random_delay)
+            time.sleep(time_remaining + random_delay)
 
 
 if __name__ == '__main__':
