@@ -100,8 +100,11 @@ def main():
                     for side, price, amount in normalize_entry(data):
                         points.append(make_point(kind, exchange, base, quote, side, timestamp, price, amount))
                 elif kind == 'trades':
-                    side, price, amount = normalize_entry(data)
-                    points.append(make_point(kind, exchange, base, quote, side, timestamp, price, amount))
+                    try:
+                        side, price, amount = normalize_entry(data)
+                        points.append(make_point(kind, exchange, base, quote, side, timestamp, price, amount))
+                    except Exception:
+                        logging.warning('skipping %s', data)
                 if len(points) >= args.batch_size:
                     write_points(db, points)
                     points = []
