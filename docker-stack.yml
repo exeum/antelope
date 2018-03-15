@@ -2,7 +2,7 @@ version: "3"
 services:
   trades_bitfinex_btcusd:
     image: exeum/antelope-scraper
-    command: trades bitfinex btc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"BTCUSD"}'
+    command: trades bitfinex btc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"trades","pair":"BTCUSD"}'
     volumes:
       - data:/data
 
