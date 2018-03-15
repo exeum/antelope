@@ -22,13 +22,14 @@ def time_ns():
     return int(time.time() * 1000000000)
 
 
-def write_point(db, kind, exchange, symbol, scraper_id, size):
+def write_point(db, kind, exchange, base, quote, scraper_id, size):
     point = {
         'measurement': 'scraper',
         'tags': {
             'kind': kind,
             'exchange': exchange,
-            'symbol': symbol,
+            'base': base,
+            'quote': quote,
             'scraper_id': scraper_id
         },
         'time': time_ns(),
@@ -60,7 +61,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('kind', choices=('book', 'trades'))
     parser.add_argument('exchange')
-    parser.add_argument('symbol')
+    parser.add_argument('base')
+    parser.add_argument('quote')
     parser.add_argument('uri')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
@@ -90,9 +92,9 @@ def main():
 
             size = len(data)
             logging.info(f'got {size} bytes')
-            write_point(db, args.kind, args.exchange, args.symbol, scraper_id, size)
+            write_point(db, args.kind, args.exchange, args.base, args.quote, scraper_id, size)
             date = time.strftime('%Y%m%d')
-            filename = f'/data/{args.kind}-{args.exchange}-{args.symbol}-{date}-{scraper_id}'
+            filename = f'/data/{args.kind}-{args.exchange}-{args.base}-{args.quote}-{date}-{scraper_id}'
             append_line(filename, wrap_data(data))
     else:
         logging.info(f'querying REST endpoint {args.uri}')
@@ -102,9 +104,9 @@ def main():
 
             size = len(data)
             logging.info(f'got {size} bytes')
-            write_point(db, args.kind, args.exchange, args.symbol, scraper_id, size)
+            write_point(db, args.kind, args.exchange, args.base, args.quote, scraper_id, size)
             date = time.strftime('%Y%m%d')
-            filename = f'/data/{args.kind}-{args.exchange}-{args.symbol}-{date}-{scraper_id}'
+            filename = f'/data/{args.kind}-{args.exchange}-{args.base}-{args.quote}-{date}-{scraper_id}'
             append_line(filename, wrap_data(data))
 
             time_elapsed = time.time() - time_start
