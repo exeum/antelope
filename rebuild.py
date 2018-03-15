@@ -87,7 +87,7 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
-    for path in Path(args.dir).glob('*[!.gz]'):
+    for path in Path(args.dir).glob('*.gz'):
         kind, exchange, base, quote, scraper_id = parse_archive_filename(path)
         logging.info(f'processing {exchange} {base}/{quote} ({scraper_id})')
         normalize_entry = globals()[f'normalize_{kind}_entry_{exchange}']

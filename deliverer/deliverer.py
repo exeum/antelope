@@ -38,6 +38,7 @@ def parse_args():
     return parser.parse_args()
 
 
+# TODO: just send all gzips as a separate step, for resiliency :^)
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
