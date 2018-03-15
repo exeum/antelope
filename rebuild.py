@@ -41,7 +41,7 @@ def normalize_book_entry_gdax(obj):
     for order in obj['bids']:
         yield 'buy', float(order[0]), float(order[1])
     for order in obj['asks']:
-        yield 'buy', float(order[0]), float(order[1])
+        yield 'sell', float(order[0]), float(order[1])
 
 
 def make_point(kind, exchange, base, quote, side, timestamp, price, amount):
