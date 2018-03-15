@@ -14,7 +14,7 @@ import requests
 import websocket
 from retrying import retry
 
-TIMEOUT = 10
+TIMEOUT = 5
 RETRIES = 3
 
 
