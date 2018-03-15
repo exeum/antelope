@@ -3,6 +3,7 @@
 import argparse
 import json
 import logging
+import ssl
 import time
 import uuid
 from random import random
@@ -13,7 +14,7 @@ import requests
 import websocket
 from retrying import retry
 
-TIMEOUT = 5
+TIMEOUT = 10
 RETRIES = 3
 
 
@@ -77,7 +78,9 @@ def main():
 
     if urlparse(args.uri).scheme.startswith('ws'):
         logging.info(f'querying WebSocket endpoint {args.uri}')
-        ws = websocket.create_connection(args.uri)
+        ws = websocket.create_connection(args.uri,
+                                         timeout=TIMEOUT,
+                                         sslopt={'cert_reqs': ssl.CERT_NONE})
         if args.subscribe:
             ws.send(args.subscribe)
         while True:
