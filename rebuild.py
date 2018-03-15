@@ -23,17 +23,17 @@ def get_prices_type2(obj):
             {float(order[0]) for order in obj['asks']})
 
 
-def make_point(exchange, symbol, timestamp, bid, ask):
+def make_point(exchange, symbol, side, timestamp, price):
     return {
         'measurement': 'price',
         'tags': {
             'exchange': exchange,
-            'symbol': symbol
+            'symbol': symbol,
+            'side': side
         },
         'time': int(timestamp) * 1000000000,
         'fields': {
-            'bid': bid,
-            'ask': ask
+            'price': price
         }
     }
 
@@ -77,8 +77,8 @@ def main():
             for line in f:
                     obj = json.loads(line)
                     bids, asks = get_prices(obj['data'])
-                    bid, ask = max(bids), min(asks)
-                    points.append(make_point(exchange, symbol, obj['timestamp'], bid, ask))
+                    points.extend([make_point(exchange, symbol, 'bid', obj['timestamp'], max(bids)),
+                                   make_point(exchange, symbol, 'ask', obj['timestamp'], max(asks))])
                     if len(points) >= args.batch_size:
                         write_points(db, points)
                         points = []
