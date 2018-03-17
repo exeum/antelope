@@ -14,20 +14,17 @@ INTERVAL = 60
 EXPIRY = 60 * 60
 
 
-def compress(filename_in, filename_out):
-    logging.info(f'compressing {filename_in}')
-    with open(filename_in, 'rb') as fin:
-        with gzip.open(filename_out, 'wb') as fout:
+def compress(filename):
+    logging.info(f'compressing {filename}')
+    with open(filename, 'rb') as fin:
+        with gzip.open(filename + '.gz', 'wb') as fout:
             shutil.copyfileobj(fin, fout)
 
 
-def file_age(filename):
-    return time.time() - os.path.getmtime(filename)
-
-
-def remove(filename):
-    logging.info(f'removing {filename}')
-    os.remove(filename)
+def remove(path):
+    logging.info(f'removing {path.name}')
+    if path.exists():
+        path.unlink()
 
 
 def parse_args():
@@ -38,21 +35,20 @@ def parse_args():
     return parser.parse_args()
 
 
-# TODO: just send all gzips as a separate step, for resiliency :^)
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
-    #s3 = boto3.client('s3', region_name=args.region)
+    # s3 = boto3.client('s3', region_name=args.region)
     while True:
-        paths = [str(path) for path in Path(args.dir).glob('*[!.gz]')]
-        logging.info(f'currently {len(paths)} order book logs')
-        for path in paths:
-            if file_age(path) > EXPIRY:
-                path_gz = path + '.gz'
-                compress(path, path_gz)
-                #s3.upload_file(path_gz, args.bucket, path_gz)
-                #remove(path_gz)
-                remove(path)
+        dir_path = Path(args.dir)
+        for path in dir_path.glob('*[!.gz]'):
+            if time.time() - path.stat().st_mtime >= EXPIRY:
+                compress(str(path))
+                path.unlink()
+        for path in dir_path.glob('*.gz'):
+            # s3.upload_file(str(path), args.bucket, str(path))
+            # path.unlink()
+            pass
         time.sleep(INTERVAL)
 
 
