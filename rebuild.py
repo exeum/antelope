@@ -18,12 +18,12 @@ tick = 0
 def normalize_trades_entry_bitfinex(obj):
     if obj[1] == 'te':
         side = 'sell' if obj[5] < 0 else 'buy'
-        return side, obj[4], abs(obj[5])
+        yield side, obj[4], abs(obj[5])
 
 
 # https://docs.gdax.com/#the-code-classprettyprintmatchescode-channel
 def normalize_trades_entry_gdax(obj):
-    return obj['side'], float(obj['price']), float(obj['size'])
+    yield obj['side'], float(obj['price']), float(obj['size'])
 
 
 # https://bitfinex.readme.io/v1/reference#rest-public-fundingbook
@@ -76,8 +76,7 @@ def parse_archive_filename(filename):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    # TODO: just pass list of files after all; simpler for single archives
-    parser.add_argument('--dir', default='.')
+    parser.add_argument('archives', nargs='+')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
     parser.add_argument('--batch-size', type=int, default=1000)
@@ -89,23 +88,19 @@ def main():
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     points = []
-    for path in Path(args.dir).glob('*.gz'):
-        kind, exchange, base, quote, scraper_id = parse_archive_filename(path)
+    for filename in args.archives:
+        kind, exchange, base, quote, scraper_id = parse_archive_filename(filename)
         logging.info(f'processing {exchange} {base}/{quote} {kind} ({scraper_id})')
         normalize_entry = globals()[f'normalize_{kind}_entry_{exchange}']
-        with gzip.open(path, 'rt') as f:
+        with gzip.open(filename, 'rt') as f:
             for line in f:
                 obj = json.loads(line)
                 timestamp, data = obj['timestamp'], obj['data']
-                if kind == 'book':
+                try:
                     for side, price, amount in normalize_entry(data):
                         points.append(make_point(kind, exchange, base, quote, side, timestamp, price, amount))
-                elif kind == 'trades':
-                    try:
-                        side, price, amount = normalize_entry(data)
-                        points.append(make_point(kind, exchange, base, quote, side, timestamp, price, amount))
-                    except Exception:
-                        logging.warning('skipping %s', data)
+                except Exception:
+                    logging.warning('skipping %s', data)
                 if len(points) >= args.batch_size:
                     write_points(db, points)
                     points = []

@@ -29,20 +29,6 @@ def write_point(db, tags, size):
     }])
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('kind', choices=('book', 'trades'))
-    parser.add_argument('exchange')
-    parser.add_argument('base')
-    parser.add_argument('quote')
-    parser.add_argument('url')
-    parser.add_argument('--host', default='107.191.60.146')
-    parser.add_argument('--database', default='antelope')
-    parser.add_argument('--interval', type=float, default=1)
-    parser.add_argument('--subscribe')
-    return parser.parse_args()
-
-
 def process(data, db, tags, filename):
     size = len(data)
     logging.info(f'got {size} bytes')
@@ -80,6 +66,20 @@ def scrape_http(url, db, tags, filename, interval):
         time_remaining = max(0, interval - time_elapsed)
         random_delay = interval * random()
         time.sleep(time_remaining + random_delay)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('kind', choices=('book', 'trades'))
+    parser.add_argument('exchange')
+    parser.add_argument('base')
+    parser.add_argument('quote')
+    parser.add_argument('url')
+    parser.add_argument('--host', default='107.191.60.146')
+    parser.add_argument('--database', default='antelope')
+    parser.add_argument('--interval', type=float, default=1)
+    parser.add_argument('--subscribe')
+    return parser.parse_args()
 
 
 def main():
