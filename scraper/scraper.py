@@ -29,18 +29,6 @@ def write_point(db, tags, size):
     }])
 
 
-def wrap_data(data):
-    return json.dumps({
-        'timestamp': time.time(),
-        'data': json.loads(data)
-    }, separators=(',', ':'))
-
-
-def append_line(filename, line):
-    with open(filename, 'at') as f:
-        f.write(line + '\n')
-
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('kind', choices=('book', 'trades'))
@@ -59,12 +47,17 @@ def process(data, db, tags, filename):
     size = len(data)
     logging.info(f'got {size} bytes')
     write_point(db, tags, size)
-    append_line(filename, wrap_data(data))
+    line = json.dumps({
+        'timestamp': time.time(),
+        'data': json.loads(data)
+    }, separators=(',', ':'))
+    with open(filename, 'at') as f:
+        f.write(line + '\n')
 
 
 @retry(stop_max_attempt_number=RETRIES)
 def scrape_websocket(url, db, tags, filename, subscribe):
-    logging.info(f'querying WebSocket endpoint {url}')
+    logging.info(f'scraping WebSocket endpoint {url}')
     ws = websocket.create_connection(url, sslopt={'cert_reqs': ssl.CERT_NONE})
     if subscribe:
         ws.send(subscribe)
@@ -78,7 +71,7 @@ def scrape_websocket(url, db, tags, filename, subscribe):
 
 @retry(stop_max_attempt_number=RETRIES)
 def scrape_http(url, db, tags, filename, interval):
-    logging.info(f'querying HTTP endpoint {url}')
+    logging.info(f'scraping HTTP endpoint {url}')
     while True:
         time_start = time.time()
         data = requests.get(url, timeout=TIMEOUT).text
