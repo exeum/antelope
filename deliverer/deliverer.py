@@ -3,7 +3,6 @@
 import argparse
 import gzip
 import logging
-import os
 import shutil
 import time
 from pathlib import Path
@@ -11,7 +10,7 @@ from pathlib import Path
 import boto3
 
 INTERVAL = 60
-EXPIRY = 60 * 60
+EXPIRY = 600
 
 
 def compress(filename):
@@ -23,8 +22,7 @@ def compress(filename):
 
 def remove(path):
     logging.info(f'removing {path.name}')
-    if path.exists():
-        path.unlink()
+    path.unlink()
 
 
 def parse_args():
@@ -44,10 +42,10 @@ def main():
         for path in dir_path.glob('*[!.gz]'):
             if time.time() - path.stat().st_mtime >= EXPIRY:
                 compress(str(path))
-                path.unlink()
+                remove(path)
         for path in dir_path.glob('*.gz'):
             # s3.upload_file(str(path), args.bucket, str(path))
-            # path.unlink()
+            # remove(path)
             pass
         time.sleep(INTERVAL)
 

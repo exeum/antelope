@@ -63,7 +63,7 @@ def parse_args():
     parser.add_argument('exchange')
     parser.add_argument('base')
     parser.add_argument('quote')
-    parser.add_argument('uri')
+    parser.add_argument('url')
     parser.add_argument('--host', default='107.191.60.146')
     parser.add_argument('--database', default='antelope')
     parser.add_argument('--interval', type=float, default=1)
@@ -80,34 +80,41 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
     append_line(filename, wrap_data(data))
 
 
+# TODO: Refactor as metric tags?
+def scrape_websocket(url, subscribe, db, kind, exchange, base, quote, scraper_id):
+    logging.info(f'querying WebSocket endpoint {url}')
+    ws = websocket.create_connection(url, sslopt={'cert_reqs': ssl.CERT_NONE})
+    if subscribe:
+        ws.send(subscribe)
+    while True:
+        data = ws.recv()
+        if not data:
+            logging.warning('skipping empty response')
+            continue
+        process(data, db, kind, exchange, base, quote, scraper_id)
+
+
+def scrape_http(url, db, kind, exchange, base, quote, scraper_id, interval):
+    logging.info(f'querying HTTP endpoint {url}')
+    while True:
+        time_start = time.time()
+        data = http_get(url)
+        process(data, db, kind, exchange, base, quote, scraper_id)
+        time_elapsed = time.time() - time_start
+        time_remaining = max(0, interval - time_elapsed)
+        random_delay = interval * random()
+        time.sleep(time_remaining + random_delay)
+
+
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
-
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     scraper_id = uuid.uuid4().hex
-
-    if urlparse(args.uri).scheme.startswith('ws'):
-        logging.info(f'querying WebSocket endpoint {args.uri}')
-        ws = websocket.create_connection(args.uri, sslopt={'cert_reqs': ssl.CERT_NONE})
-        if args.subscribe:
-            ws.send(args.subscribe)
-        while True:
-            data = ws.recv()
-            if not data:
-                logging.warning('skipping empty response')
-                continue
-            process(data, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
+    if urlparse(args.url).scheme.startswith('ws'):
+        scrape_websocket(args.url, args.subscribe, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
     else:
-        logging.info(f'querying REST endpoint {args.uri}')
-        while True:
-            time_start = time.time()
-            data = http_get(args.uri)
-            process(data, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
-            time_elapsed = time.time() - time_start
-            time_remaining = max(0, args.interval - time_elapsed)
-            random_delay = args.interval * random()
-            time.sleep(time_remaining + random_delay)
+        scrape_http(args.url, db, args.kind, args.exchange, args.base, args.quote, scraper_id, args.interval)
 
 
 if __name__ == '__main__':
