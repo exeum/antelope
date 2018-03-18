@@ -18,31 +18,15 @@ TIMEOUT = 5
 RETRIES = 3
 
 
-def time_ns():
-    return int(time.time() * 1000000000)
-
-
-def write_point(db, kind, exchange, base, quote, scraper_id, size):
-    point = {
+def write_point(db, tags, size):
+    db.write_points([{
         'measurement': 'scraper',
-        'tags': {
-            'kind': kind,
-            'exchange': exchange,
-            'base': base,
-            'quote': quote,
-            'scraper_id': scraper_id
-        },
-        'time': time_ns(),
+        'tags': tags,
+        'time': int(time.time()) * 1000000000,
         'fields': {
-            'size': float(size),
+            'size': size,
         }
-    }
-    db.write_points([point])
-
-
-@retry(stop_max_attempt_number=RETRIES)
-def http_get(url):
-    return requests.get(url, timeout=TIMEOUT).text
+    }])
 
 
 def wrap_data(data):
@@ -71,17 +55,15 @@ def parse_args():
     return parser.parse_args()
 
 
-def process(data, db, kind, exchange, base, quote, scraper_id):
+def process(data, db, tags, filename):
     size = len(data)
     logging.info(f'got {size} bytes')
-    write_point(db, kind, exchange, base, quote, scraper_id, size)
-    date = time.strftime('%Y%m%d')
-    filename = f'/data/{kind}-{exchange}-{base}-{quote}-{date}-{scraper_id}'
+    write_point(db, tags, size)
     append_line(filename, wrap_data(data))
 
 
-# TODO: Refactor as metric tags?
-def scrape_websocket(url, subscribe, db, kind, exchange, base, quote, scraper_id):
+@retry(stop_max_attempt_number=RETRIES)
+def scrape_websocket(url, db, tags, filename, subscribe):
     logging.info(f'querying WebSocket endpoint {url}')
     ws = websocket.create_connection(url, sslopt={'cert_reqs': ssl.CERT_NONE})
     if subscribe:
@@ -91,15 +73,16 @@ def scrape_websocket(url, subscribe, db, kind, exchange, base, quote, scraper_id
         if not data:
             logging.warning('skipping empty response')
             continue
-        process(data, db, kind, exchange, base, quote, scraper_id)
+        process(data, db, tags, filename)
 
 
-def scrape_http(url, db, kind, exchange, base, quote, scraper_id, interval):
+@retry(stop_max_attempt_number=RETRIES)
+def scrape_http(url, db, tags, filename, interval):
     logging.info(f'querying HTTP endpoint {url}')
     while True:
         time_start = time.time()
-        data = http_get(url)
-        process(data, db, kind, exchange, base, quote, scraper_id)
+        data = requests.get(url, timeout=TIMEOUT).text
+        process(data, db, tags, filename)
         time_elapsed = time.time() - time_start
         time_remaining = max(0, interval - time_elapsed)
         random_delay = interval * random()
@@ -111,10 +94,19 @@ def main():
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
     scraper_id = uuid.uuid4().hex
+    date = time.strftime('%Y%m%d')
+    filename = f'/data/{args.kind}-{args.exchange}-{args.base}-{args.quote}-{date}-{scraper_id}'
+    tags = {
+        'kind': args.kind,
+        'exchange': args.exchange,
+        'base': args.base,
+        'quote': args.quote,
+        'scraper_id': scraper_id
+    }
     if urlparse(args.url).scheme.startswith('ws'):
-        scrape_websocket(args.url, args.subscribe, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
+        scrape_websocket(args.url, db, tags, filename, args.subscribe)
     else:
-        scrape_http(args.url, db, args.kind, args.exchange, args.base, args.quote, scraper_id, args.interval)
+        scrape_http(args.url, db, tags, filename, args.interval)
 
 
 if __name__ == '__main__':
