@@ -1,4 +1,4 @@
-.PHONY: build push
+.PHONY: build push deploy rm ps
 
 build:
 	( cd scraper && docker build -t exeum/antelope-scraper . )
@@ -7,3 +7,12 @@ build:
 push:
 	docker push exeum/antelope-scraper
 	docker push exeum/antelope-deliverer
+
+deploy:
+	docker stack deploy -c docker-stack.yml antelope
+
+rm:
+	docker stack rm antelope
+
+ps:
+	docker stack ps antelope --no-trunc
