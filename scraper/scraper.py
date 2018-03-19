@@ -12,10 +12,8 @@ from urllib.parse import urlparse
 import influxdb
 import requests
 import websocket
-from retrying import retry
 
 TIMEOUT = 5
-RETRIES = 3
 
 
 def write_point(db, tags, size):
@@ -41,7 +39,6 @@ def process(data, db, tags, filename):
         f.write(line + '\n')
 
 
-@retry(stop_max_attempt_number=RETRIES)
 def scrape_websocket(url, db, tags, filename, subscribe):
     logging.info(f'scraping WebSocket endpoint {url}')
     ws = websocket.create_connection(url, sslopt={'cert_reqs': ssl.CERT_NONE})
@@ -55,7 +52,6 @@ def scrape_websocket(url, db, tags, filename, subscribe):
         process(data, db, tags, filename)
 
 
-@retry(stop_max_attempt_number=RETRIES)
 def scrape_http(url, db, tags, filename, interval):
     logging.info(f'scraping HTTP endpoint {url}')
     while True:
