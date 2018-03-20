@@ -13,7 +13,7 @@ import influxdb
 import requests
 import websocket
 
-TIMEOUT = 5
+TIMEOUT = 10
 
 
 def write_point(db, tags, size):
