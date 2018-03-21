@@ -53,6 +53,15 @@ def scrape_websocket(url, db, tags, filename, subscribe):
 
 
 def scrape_http(url, db, tags, filename, interval):
+    """
+    i: target interval, r: replicas, R: random in [0, 1)
+    Want to minimize sleep and maximize difference between
+    scraper queries. Only know replica count. No proof but
+    with random scrapers
+        sleep = i + ((i * R) / r)
+    kinda makes sense? In the best case would cover whole
+    interval? We want 1 Hz, so r = i: sleep = i + R
+    """
     logging.info(f'scraping HTTP endpoint {url}')
     while True:
         time_start = time.time()
@@ -60,8 +69,7 @@ def scrape_http(url, db, tags, filename, interval):
         process(data, db, tags, filename)
         time_elapsed = time.time() - time_start
         time_remaining = max(0, interval - time_elapsed)
-        random_delay = interval * random()
-        time.sleep(time_remaining + random_delay)
+        time.sleep(time_remaining + random())
 
 
 def parse_args():
