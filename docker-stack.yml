@@ -9,6 +9,7 @@ services:
   book_bitfinex_btc_usd:
     image: exeum/antelope-scraper
     command: book bitfinex btc usd https://api.bitfinex.com/v1/book/btcusd --interval 3
+    deployment_strategy: high_availability
     deploy:
       replicas: 3
     volumes:
@@ -23,6 +24,7 @@ services:
   book_bitfinex_eth_usd:
     image: exeum/antelope-scraper
     command: book bitfinex eth usd https://api.bitfinex.com/v1/book/ethusd --interval 3
+    deployment_strategy: high_availability
     deploy:
       replicas: 3
     volumes:
@@ -37,6 +39,7 @@ services:
   book_gdax_btc_usd:
     image: exeum/antelope-scraper
     command: book gdax btc usd https://api.gdax.com/products/BTC-USD/book?level=2 --interval 3
+    deployment_strategy: high_availability
     deploy:
       replicas: 3
     volumes:
@@ -51,6 +54,7 @@ services:
   book_gdax_eth_usd:
     image: exeum/antelope-scraper
     command: book gdax eth usd https://api.gdax.com/products/ETH-USD/book?level=2 --interval 3
+    deployment_strategy: high_availability
     deploy:
       replicas: 3
     volumes:
