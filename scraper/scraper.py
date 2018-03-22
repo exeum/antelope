@@ -79,7 +79,7 @@ def parse_args():
     parser.add_argument('base')
     parser.add_argument('quote')
     parser.add_argument('url')
-    parser.add_argument('--host', default='107.191.60.146')
+    parser.add_argument('--host', default='18.216.124.51')
     parser.add_argument('--database', default='antelope')
     parser.add_argument('--interval', type=float, default=1)
     parser.add_argument('--subscribe')

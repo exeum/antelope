@@ -77,7 +77,7 @@ def parse_archive_filename(filename):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('archives', nargs='+')
-    parser.add_argument('--host', default='107.191.60.146')
+    parser.add_argument('--host', default='18.216.124.51')
     parser.add_argument('--database', default='antelope')
     parser.add_argument('--batch-size', type=int, default=1000)
     return parser.parse_args()
