@@ -1,30 +1,58 @@
 version: "3"
 services:
-  trades_bitfinex_btcusd:
+  trades_bitfinex_btc_usd:
     image: exeum/antelope-scraper
     command: trades bitfinex btc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"trades","pair":"BTCUSD"}'
     volumes:
       - data:/data
 
-  book_bitfinex_btcusd:
+  book_bitfinex_btc_usd:
     image: exeum/antelope-scraper
-    command: book bitfinex btc usd https://api.bitfinex.com/v1/book/btcusd --interval 6
+    command: book bitfinex btc usd https://api.bitfinex.com/v1/book/btcusd --interval 3
     deploy:
-      replicas: 2
+      replicas: 3
     volumes:
       - data:/data
 
-  trades_gdax_btcusd:
+  trades_bitfinex_eth_usd:
+    image: exeum/antelope-scraper
+    command: trades bitfinex eth usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"trades","pair":"ETHUSD"}'
+    volumes:
+      - data:/data
+
+  book_bitfinex_eth_usd:
+    image: exeum/antelope-scraper
+    command: book bitfinex eth usd https://api.bitfinex.com/v1/book/ethusd --interval 3
+    deploy:
+      replicas: 3
+    volumes:
+      - data:/data
+
+  trades_gdax_btc_usd:
     image: exeum/antelope-scraper
     command: trades gdax btc usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BTC-USD"],"channels":["matches"]}'
     volumes:
       - data:/data
 
-  book_gdax_btcusd:
+  book_gdax_btc_usd:
     image: exeum/antelope-scraper
-    command: book gdax btc usd https://api.gdax.com/products/BTC-USD/book?level=2 --interval 6
+    command: book gdax btc usd https://api.gdax.com/products/BTC-USD/book?level=2 --interval 3
     deploy:
-      replicas: 2
+      replicas: 3
+    volumes:
+      - data:/data
+
+  trades_gdax_eth_usd:
+    image: exeum/antelope-scraper
+    command: trades gdax eth usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["ETH-USD"],"channels":["matches"]}'
+    volumes:
+      - data:/data
+
+  book_gdax_eth_usd:
+    image: exeum/antelope-scraper
+    command: book gdax eth usd https://api.gdax.com/products/ETH-USD/book?level=2 --interval 3
+    deploy:
+      replicas: 3
     volumes:
       - data:/data
 
