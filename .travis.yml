@@ -10,8 +10,7 @@ script:
   - find . -name '*.py' | xargs pylint || true
   #- find . -name '*.py' | xargs pylint && STATUS=0 || STATUS=$?
   #- test $(( STATUS & 3 )) -ne 0 && exit $STATUS
-  - ( cd book && docker build -t antelope-book . )
-  - ( cd trades && docker build -t antelope-trades . )
+  - ( cd scraper && docker build -t antelope-scraper . )
   - ( cd deliverer && docker build -t antelope-deliverer . )
 notifications:
   slack: exeum-foundation:N5NC7XlSG6BlY85rF3aILVG6
