@@ -6,11 +6,8 @@ import logging
 import ssl
 import time
 import uuid
-from random import random
-from urllib.parse import urlparse
 
 import influxdb
-import requests
 import websocket
 
 TIMEOUT = 10
@@ -39,8 +36,8 @@ def process(data, db, tags, filename):
         f.write(line + '\n')
 
 
-def scrape_websocket(url, db, tags, filename, subscribe):
-    logging.info(f'scraping WebSocket endpoint {url}')
+def scrape(url, db, tags, filename, subscribe):
+    logging.info(f'scraping {url}')
     ws = websocket.create_connection(url, sslopt={'cert_reqs': ssl.CERT_NONE})
     if subscribe:
         ws.send(subscribe)
@@ -52,26 +49,6 @@ def scrape_websocket(url, db, tags, filename, subscribe):
         process(data, db, tags, filename)
 
 
-def scrape_http(url, db, tags, filename, interval):
-    """
-    i: target interval, r: replicas, R: random in [0, 1)
-    Want to minimize sleep and maximize difference between
-    scraper queries. Only know replica count. No proof but
-    with random scrapers
-        sleep = i + ((i * R) / r)
-    kinda makes sense? In the best case would cover whole
-    interval? We want 1 Hz, so r = i: sleep = i + R
-    """
-    logging.info(f'scraping HTTP endpoint {url}')
-    while True:
-        time_start = time.time()
-        data = requests.get(url, timeout=TIMEOUT).text
-        process(data, db, tags, filename)
-        time_elapsed = time.time() - time_start
-        time_remaining = max(0, interval - time_elapsed)
-        time.sleep(time_remaining + random())
-
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('kind', choices=('book', 'trades'))
@@ -79,10 +56,9 @@ def parse_args():
     parser.add_argument('base')
     parser.add_argument('quote')
     parser.add_argument('url')
+    parser.add_argument('--subscribe')
     parser.add_argument('--host', default='18.216.124.51')
     parser.add_argument('--database', default='antelope')
-    parser.add_argument('--interval', type=float, default=1)
-    parser.add_argument('--subscribe')
     return parser.parse_args()
 
 
@@ -100,10 +76,7 @@ def main():
         'quote': args.quote,
         'scraper_id': scraper_id
     }
-    if urlparse(args.url).scheme.startswith('ws'):
-        scrape_websocket(args.url, db, tags, filename, args.subscribe)
-    else:
-        scrape_http(args.url, db, tags, filename, args.interval)
+    scrape(args.url, db, tags, filename, args.subscribe)
 
 
 if __name__ == '__main__':
