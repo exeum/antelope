@@ -13,31 +13,36 @@ import websocket
 TIMEOUT = 10
 
 
-def write_point(db, tags, size):
+def process(data, db, kind, exchange, base, quote, scraper_id):
+    size = len(data)
+    logging.info(f'got {size} bytes')
     db.write_points([{
         'measurement': 'scraper',
-        'tags': tags,
+        'tags': {
+            'kind': kind,
+            'exchange': exchange,
+            'base': base,
+            'quote': quote,
+            'scraper_id': scraper_id
+        },
         'time': int(time.time()) * 1000000000,
         'fields': {
             'size': size,
         }
     }])
-
-
-def process(data, db, tags, filename):
-    size = len(data)
-    logging.info(f'got {size} bytes')
-    write_point(db, tags, size)
     line = json.dumps({
         'timestamp': time.time(),
         'data': json.loads(data)
     }, separators=(',', ':'))
+    date = time.strftime('%Y%m%d')
+    filename = f'/data/{kind}-{exchange}-{base}-{quote}-{date}-{scraper_id}'
     with open(filename, 'at') as f:
         f.write(line + '\n')
 
 
-def scrape(url, db, tags, filename, subscribe):
+def scrape(url, subscribe, db, kind, exchange, base, quote):
     logging.info(f'scraping {url}')
+    scraper_id = uuid.uuid4().hex
     ws = websocket.create_connection(url, sslopt={'cert_reqs': ssl.CERT_NONE})
     if subscribe:
         ws.send(subscribe)
@@ -46,7 +51,7 @@ def scrape(url, db, tags, filename, subscribe):
         if not data:
             logging.warning('skipping empty response')
             continue
-        process(data, db, tags, filename)
+        process(data, db, kind, exchange, base, quote, scraper_id)
 
 
 def parse_args():
@@ -56,8 +61,8 @@ def parse_args():
     parser.add_argument('base')
     parser.add_argument('quote')
     parser.add_argument('url')
-    parser.add_argument('--subscribe')
-    parser.add_argument('--host', default='18.216.124.51')
+    parser.add_argument('subscribe')
+    parser.add_argument('--host')
     parser.add_argument('--database', default='antelope')
     return parser.parse_args()
 
@@ -66,17 +71,7 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
-    scraper_id = uuid.uuid4().hex
-    date = time.strftime('%Y%m%d')
-    filename = f'/data/{args.kind}-{args.exchange}-{args.base}-{args.quote}-{date}-{scraper_id}'
-    tags = {
-        'kind': args.kind,
-        'exchange': args.exchange,
-        'base': args.base,
-        'quote': args.quote,
-        'scraper_id': scraper_id
-    }
-    scrape(args.url, db, tags, filename, args.subscribe)
+    scrape(args.url, args.subscribe, db, args.kind, args.exchange, args.base, args.quote)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@
 import argparse
 import gzip
 import logging
+import os
 import shutil
 import time
 from pathlib import Path
@@ -36,16 +37,16 @@ def parse_args():
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
-    # s3 = boto3.client('s3', region_name=args.region)
+    s3 = boto3.client('s3', region_name=args.region)
     while True:
         dir_path = Path(args.dir)
         for path in dir_path.glob('*[!.gz]'):
             if time.time() - path.stat().st_mtime >= EXPIRY:
                 compress(str(path))
-                remove(path)
         for path in dir_path.glob('*.gz'):
-            # s3.upload_file(str(path), args.bucket, str(path.name))
-            # remove(path)
+            s3.upload_file(str(path), args.bucket, str(path.name))
+            remove(path)
+            remove(os.path.splitext(path)[0])
             pass
         time.sleep(INTERVAL)
 
