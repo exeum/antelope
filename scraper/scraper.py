@@ -8,6 +8,7 @@ import time
 import uuid
 
 import influxdb
+import requests
 import websocket
 
 TIMEOUT = 10
@@ -15,7 +16,7 @@ TIMEOUT = 10
 
 def process(data, db, kind, exchange, base, quote, scraper_id):
     size = len(data)
-    logging.info(f'got {size} bytes')
+    logging.info(data)
     db.write_points([{
         'measurement': 'scraper',
         'tags': {
@@ -35,16 +36,21 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
         'data': json.loads(data)
     }, separators=(',', ':'))
     date = time.strftime('%Y%m%d')
-    filename = f'/data/{kind}-{exchange}-{base}-{quote}-{date}-{scraper_id}'
+    filename = f'/data/{exchange}-{kind}-{base}-{quote}-{date}-{scraper_id}'
     with open(filename, 'at') as f:
         f.write(line + '\n')
 
 
-def scrape(url, subscribe, db, kind, exchange, base, quote):
-    logging.info(f'scraping {url}')
+def scrape(url, snapshot, subscribe, db, kind, exchange, base, quote):
     scraper_id = uuid.uuid4().hex
+    if snapshot:
+        logging.info(f'getting snapshot {snapshot}')
+        data = requests.get(snapshot, timeout=TIMEOUT).text
+        process(data, db, kind, exchange, base, quote, scraper_id)
+    logging.info(f'scraping {url}')
     ws = websocket.create_connection(url, sslopt={'cert_reqs': ssl.CERT_NONE})
     if subscribe:
+        logging.info(f'subscribing for {subscribe}')
         ws.send(subscribe)
     while True:
         data = ws.recv()
@@ -56,12 +62,13 @@ def scrape(url, subscribe, db, kind, exchange, base, quote):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('kind', choices=('book', 'trades'))
     parser.add_argument('exchange')
+    parser.add_argument('kind', choices=('book', 'trades'))
     parser.add_argument('base')
     parser.add_argument('quote')
     parser.add_argument('url')
-    parser.add_argument('subscribe')
+    parser.add_argument('--subscribe')
+    parser.add_argument('--snapshot')
     parser.add_argument('--host')
     parser.add_argument('--database', default='antelope')
     return parser.parse_args()
@@ -71,7 +78,7 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
-    scrape(args.url, args.subscribe, db, args.kind, args.exchange, args.base, args.quote)
+    scrape(args.url, args.snapshot, args.subscribe, db, args.kind, args.exchange, args.base, args.quote)
 
 
 if __name__ == '__main__':
