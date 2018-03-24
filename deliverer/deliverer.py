@@ -53,7 +53,6 @@ def main():
             upload(path, s3, args.bucket)
             remove(path)
             remove(path.parent.joinpath(path.stem))
-        logging.info(f'sleeping for {INTERVAL} seconds')
         time.sleep(INTERVAL)
 
 
