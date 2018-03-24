@@ -69,7 +69,7 @@ def parse_args():
     parser.add_argument('url')
     parser.add_argument('--subscribe')
     parser.add_argument('--snapshot')
-    parser.add_argument('--host')
+    parser.add_argument('--influxdb')
     parser.add_argument('--database', default='antelope')
     return parser.parse_args()
 
@@ -77,7 +77,7 @@ def parse_args():
 def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
-    db = influxdb.InfluxDBClient(host=args.host, database=args.database, timeout=TIMEOUT)
+    db = influxdb.InfluxDBClient(host=args.influxdb, database=args.database, timeout=TIMEOUT)
     scrape(args.url, args.snapshot, args.subscribe, db, args.kind, args.exchange, args.base, args.quote)
 
 
