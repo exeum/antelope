@@ -3,7 +3,6 @@
 import argparse
 import gzip
 import logging
-import os
 import shutil
 import time
 from pathlib import Path
@@ -14,11 +13,18 @@ INTERVAL = 60
 EXPIRY = 600
 
 
-def compress(filename):
-    logging.info(f'compressing {filename}')
-    with open(filename, 'rb') as fin:
-        with gzip.open(filename + '.gz', 'wb') as fout:
+def compress(path):
+    logging.info(f'compressing {path.name}')
+    with open(path, 'rb') as fin:
+        with gzip.open(str(path) + '.gz', 'wb') as fout:
             shutil.copyfileobj(fin, fout)
+
+
+def upload(path, s3, bucket):
+    logging.info(f'uploading {path.name} to {bucket}')
+    s3.upload_file(str(path), bucket, path.name)
+    logging.info(f'verifying {path.name} got uploaded')
+    s3.head_object(Bucket=bucket, Key=path.name)
 
 
 def remove(path):
@@ -28,9 +34,8 @@ def remove(path):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir', default='/data')
-    parser.add_argument('--region', default='us-east-1')
-    parser.add_argument('--bucket', default='antelope')
+    parser.add_argument('--region', default='us-east-2')
+    parser.add_argument('--bucket', default='exeum-antelope')
     return parser.parse_args()
 
 
@@ -39,15 +44,14 @@ def main():
     args = parse_args()
     s3 = boto3.client('s3', region_name=args.region)
     while True:
-        dir_path = Path(args.dir)
-        for path in dir_path.glob('*[!.gz]'):
+        data_path = Path('/data')
+        for path in data_path.glob('*[!.gz]'):
             if time.time() - path.stat().st_mtime >= EXPIRY:
-                compress(str(path))
-        for path in dir_path.glob('*.gz'):
-            s3.upload_file(str(path), args.bucket, str(path.name))
+                compress(path)
+        for path in data_path.glob('*.gz'):
+            upload(path, s3, args.bucket)
             remove(path)
-            remove(os.path.splitext(path)[0])
-            pass
+            remove(path.parent.joinpath(path.stem))
         time.sleep(INTERVAL)
 
 
