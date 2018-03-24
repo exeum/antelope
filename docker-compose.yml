@@ -24,17 +24,17 @@ services:
     volumes:
       - data:/data
 
-  gemini_book_btcusd:
-    image: exeum/antelope-scraper
-    command: gemini book btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
-    volumes:
-      - data:/data
+  #gemini_book_btcusd:
+  #  image: exeum/antelope-scraper
+  #  command: gemini book btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
+  #  volumes:
+  #    - data:/data
 
-  gemini_trades_btcusd:
-    image: exeum/antelope-scraper
-    command: gemini trades btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
-    volumes:
-      - data:/data
+  #gemini_trades_btcusd:
+  #  image: exeum/antelope-scraper
+  #  command: gemini trades btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
+  #  volumes:
+  #    - data:/data
 
   binance_book_ltcbtc:
     image: exeum/antelope-scraper
@@ -53,6 +53,8 @@ services:
     environment:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
+    deploy:
+      mode: global
     volumes:
       - data:/data
 
