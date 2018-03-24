@@ -9,7 +9,7 @@ push:
 	docker push exeum/antelope-deliverer
 
 deploy:
-	docker stack deploy -c docker-stack.yml antelope
+	docker stack deploy -c docker-compose.yml antelope
 
 rm:
 	docker stack rm antelope

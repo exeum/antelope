@@ -1,43 +1,58 @@
 version: "3"
 services:
-  trades_bitfinex_btcusd:
+  bitfinex_book_btcusd:
     image: exeum/antelope-scraper
-    command: trades bitfinex btc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"BTCUSD"}'
+    command: bitfinex book btc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"BTCUSD"}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
 
-  book_gdax_btcusd:
+  bitfinex_trades_btcusd:
     image: exeum/antelope-scraper
-    command: book gdax btc usd https://api.gdax.com/products/BTC-USD/book?level=2
+    command: bitfinex trades btc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"trades","pair":"BTCUSD"}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
 
-  book_gemini_btcusd:
+  gdax_book_btcusd:
     image: exeum/antelope-scraper
-    command: book gemini btc usd https://api.gemini.com/v1/book/btcusd
+    command: gdax book btc usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BTC-USD"],"channels":["level2"]}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
 
-  book_bitfinex_btcusd:
+  gdax_trades_btcusd:
     image: exeum/antelope-scraper
-    command: book bitfinex btc usd https://api.bitfinex.com/v1/book/btcusd --interval 3
+    command: gdax trades btc usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BTC-USD"],"channels":["matches"]}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
 
-  book_okex_ltcbtc:
+  gemini_book_btcusd:
     image: exeum/antelope-scraper
-    command: book okex ltc btc https://www.okex.com/api/v1/depth.do?symbol=ltc_btc
+    command: gemini book btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
     volumes:
       - data:/data
 
-  book_binance_ltcbtc:
+  gemini_trades_btcusd:
     image: exeum/antelope-scraper
-    command: book binance ltc btc https://www.binance.com/api/v1/depth?symbol=LTCBTC
+    command: gemini trades btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+  binance_book_ltcbtc:
+    image: exeum/antelope-scraper
+    command: binance book ltc btc wss://stream.binance.com:9443/ws/ltcbtc@depth --snapshot 'https://www.binance.com/api/v1/depth?symbol=LTCBTC' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+  binance_trades_ltcbtc:
+    image: exeum/antelope-scraper
+    command: binance trades ltc btc wss://stream.binance.com:9443/ws/ltcbtc@trade --influxdb ${INFLUXDB}
     volumes:
       - data:/data
 
   deliverer:
     image: exeum/antelope-deliverer
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
     volumes:
       - data:/data
 
