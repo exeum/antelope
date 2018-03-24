@@ -14,7 +14,6 @@ EXPIRY = 600
 
 
 def compress(path):
-    logging.info(f'compressing {path.name}')
     with open(path, 'rb') as fin:
         with gzip.open(str(path) + '.gz', 'wb') as fout:
             shutil.copyfileobj(fin, fout)
@@ -46,12 +45,15 @@ def main():
     while True:
         data_path = Path('/data')
         for path in data_path.glob('*[!.gz]'):
-            if time.time() - path.stat().st_mtime >= EXPIRY:
+            time_inactive = time.time() - path.stat().st_mtime
+            if time_inactive >= EXPIRY:
+                logging.info(f'{path.name} inactive for {time_inactive} seconds; compressing')
                 compress(path)
         for path in data_path.glob('*.gz'):
             upload(path, s3, args.bucket)
             remove(path)
             remove(path.parent.joinpath(path.stem))
+        logging.info(f'sleeping for {INTERVAL} seconds')
         time.sleep(INTERVAL)
 
 
