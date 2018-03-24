@@ -47,7 +47,7 @@ def main():
         for path in data_path.glob('*[!.gz]'):
             time_inactive = time.time() - path.stat().st_mtime
             if time_inactive >= EXPIRY:
-                logging.info(f'{path.name} inactive for {time_inactive} seconds; compressing')
+                logging.info(f'{path.name} inactive for {int(time_inactive)} seconds; compressing')
                 compress(path)
         for path in data_path.glob('*.gz'):
             upload(path, s3, args.bucket)
