@@ -113,7 +113,7 @@ def yield_snapshot_bitfinex(fname, bids_limit, asks_limit):
 
 if __name__ == '''__main__''':
     for (ts, bids, asks) in yield_snapshot_book_gdax(
-        'gdax-book-btc-usd-20180324-cda678d6c28c454eafbb5dc31c56c354.gz', 5, 5):
+            'gdax-book-btc-usd-20180324-cda678d6c28c454eafbb5dc31c56c354.gz', 5, 5):
         print('timestamp:', ts)
         print('bids:', bids)
         print('asks:', asks)
