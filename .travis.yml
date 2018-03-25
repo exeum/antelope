@@ -7,7 +7,7 @@ services:
 install:
   - pip install pycodestyle
 script:
-  - pycodestyle --show-source --show-pep8 --max-line-length=120 .
+  - pycodestyle --max-line-length=120 .
   - ( cd scraper && docker build -t antelope-scraper . )
   - ( cd deliverer && docker build -t antelope-deliverer . )
 notifications:
