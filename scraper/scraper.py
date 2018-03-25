@@ -41,11 +41,17 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
         f.write(line + '\n')
 
 
+def http_get(url):
+    r = requests.get(url, timeout=TIMEOUT)
+    r.raise_for_status()
+    return r.text
+
+
 def scrape(url, snapshot, subscribe, db, kind, exchange, base, quote):
     scraper_id = uuid.uuid4().hex
     if snapshot:
         logging.info(f'getting snapshot {snapshot}')
-        data = requests.get(snapshot, timeout=TIMEOUT).text
+        data = http_get(snapshot)
         process(data, db, kind, exchange, base, quote, scraper_id)
     logging.info(f'scraping {url}')
     ws = websocket.create_connection(url, sslopt={'cert_reqs': ssl.CERT_NONE})
