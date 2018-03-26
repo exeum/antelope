@@ -26,7 +26,6 @@ def normalize_price(price, frac_digits):
     if len(tokens) == 1:
         return (price + '.' + zeroes(frac_digits))
     else:
-        decimal = tokens[0]
         fraction = tokens[1]
         if len(fraction) < frac_digits:
             return (price + zeroes(frac_digits - len(fraction)))
