@@ -5,10 +5,11 @@ python:
 services:
   - docker
 install:
-  - pip install pycodestyle pytest
+  - pip install pycodestyle pyflakes pytest
 script:
-  - python -m pytest
+  - pyflakes .
   - pycodestyle --max-line-length=120 --show-source .
+  - python -m pytest --verbose
   - make build
 notifications:
   slack: exeum-foundation:N5NC7XlSG6BlY85rF3aILVG6
