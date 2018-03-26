@@ -8,7 +8,7 @@ install:
   - pip install pycodestyle pytest
 script:
   - python -m pytest
-  - pycodestyle --max-line-length=120 .
+  - pycodestyle --max-line-length=120 --show-source .
   - ( cd scraper && docker build -t antelope-scraper . )
   - ( cd deliverer && docker build -t antelope-deliverer . )
 notifications:
