@@ -9,7 +9,6 @@ install:
 script:
   - python -m pytest
   - pycodestyle --max-line-length=120 --show-source .
-  - ( cd scraper && docker build -t antelope-scraper . )
-  - ( cd deliverer && docker build -t antelope-deliverer . )
+  - make build
 notifications:
   slack: exeum-foundation:N5NC7XlSG6BlY85rF3aILVG6
