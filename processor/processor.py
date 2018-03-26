@@ -10,7 +10,6 @@ import os
 import boto3
 import influxdb
 
-INFLUXDB = os.environ['INFLUXDB']
 DATABASE = 'antelope'
 TIMEOUT = 10
 BATCH_SIZE = 1000
@@ -148,7 +147,7 @@ def read_entries(path):
 
 def handler(event, context):
     s3 = boto3.client('s3')
-    db = influxdb.InfluxDBClient(host=INFLUXDB, database=DATABASE, timeout=TIMEOUT)
+    db = influxdb.InfluxDBClient(host=os.environ['INFLUXDB'], database=DATABASE, timeout=TIMEOUT)
     for record in event['Records']:
         bucket = record['s3']['bucket']['name']
         key = record['s3']['object']['key']
