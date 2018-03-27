@@ -13,6 +13,7 @@ import influxdb
 DATABASE = 'antelope'
 TIMEOUT = 10
 BATCH_SIZE = 1000
+BOOK_LIMIT = 50
 
 
 # https://docs.bitfinex.com/v1/reference#ws-public-trades
@@ -121,9 +122,9 @@ def process_trades(entries, exchange):
 def process_book(entries, exchange):
     process = globals()[f'process_{exchange}_book']
     for timestamp, bids, asks in process(entries):
-        for price, amount in bids.items():
+        for price, amount in sorted(bids.items(), reverse=True)[:BOOK_LIMIT]:
             yield timestamp, 'bid', float(price), float(amount)
-        for price, amount in asks.items():
+        for price, amount in sorted(asks.items(), reverse=True)[:BOOK_LIMIT]:
             yield timestamp, 'ask', float(price), float(amount)
 
 
