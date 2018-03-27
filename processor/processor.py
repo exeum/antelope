@@ -115,7 +115,7 @@ def process_book(entries, exchange):
     for timestamp, bids, asks in process(entries):
         for price, amount in sorted(bids.items(), reverse=True)[:BOOK_LIMIT]:
             yield timestamp, 'bid', float(price), float(amount)
-        for price, amount in sorted(asks.items(), reverse=True)[:BOOK_LIMIT]:
+        for price, amount in sorted(asks.items())[:BOOK_LIMIT]:
             yield timestamp, 'ask', float(price), float(amount)
 
 
@@ -132,7 +132,7 @@ def process(entries, db, exchange, kind, base, quote, scraper_id):
 
 
 def read_entries(path):
-    with gzip.open(path, 'r') as f:
+    with gzip.open(path, 'rt') as f:
         for line in f:
             yield json.loads(line)
 
