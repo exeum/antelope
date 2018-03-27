@@ -32,34 +32,25 @@ def normalize(x):
     return decimal.Decimal(str(x)).normalize()
 
 
+def process_gdax_book_snapshot(snapshot):
+    data = snapshot['data']
+    bids = {normalize(price): amount for price, amount in data['bids']}
+    asks = {normalize(price): amount for price, amount in data['asks']}
+    return snapshot['timestamp'], bids, asks
+
+
 def process_gdax_book(entries):
-    bids = {}
-    asks = {}
-    next_timestamp = 0
     unprocessed_update = None
 
     # first line => fetch snapshot
-    snapshot = next(entries)
-    if snapshot['data']['type'] == 'snapshot':
-        timestamp = int(snapshot['timestamp'])
-        next_timestamp = timestamp + 1
-        snapshot_bids = snapshot['data']['bids']
-        snapshot_asks = snapshot['data']['asks']
-
-        for (price, amount) in snapshot_bids:
-            normed_price = normalize(price)
-            bids[normed_price] = amount
-        for (price, amount) in snapshot_asks:
-            normed_price = normalize(price)
-            asks[normed_price] = amount
+    timestamp, bids, asks = process_gdax_book_snapshot(next(entries))
+    next_timestamp = timestamp + 1
 
     # iterate: ~ next_timestamp
     while True:
         update = unprocessed_update if unprocessed_update is not None else next(entries)
-        if update['data']['type'] != 'l2update':
-            pass
-        else:
-            timestamp = int(update['timestamp'])
+        if update['data']['type'] == 'l2update':
+            timestamp = update['timestamp']
             if timestamp < next_timestamp:
                 unprocessed_update = None
                 changes = update['data']['changes']
@@ -75,7 +66,7 @@ def process_gdax_book(entries):
                             del asks[normed_price]
                         else:
                             asks[normed_price] = amount
-            elif timestamp >= next_timestamp:
+            else:
                 returned_timestamp = next_timestamp
                 unprocessed_update = update
                 if timestamp == next_timestamp:
