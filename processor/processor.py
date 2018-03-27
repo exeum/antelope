@@ -15,6 +15,8 @@ TIMEOUT = 10
 BATCH_SIZE = 1000
 BOOK_LIMIT = 50
 
+tick = 0
+
 
 # https://docs.bitfinex.com/v1/reference#ws-public-trades
 def process_bitfinex_trades_entry(entry):
@@ -120,6 +122,8 @@ def process_book(entries, exchange):
 
 
 def process(entries, db, exchange, kind, base, quote, scraper_id):
+    global tick
+    tick = 0
     process_entries = process_trades if 'trades' else process_book
     points = []
     for timestamp, side, price, amount in process_entries(entries, exchange):
