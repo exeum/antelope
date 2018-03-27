@@ -82,7 +82,7 @@ def process_gdax_book(entries):
                 else:
                     next_timestamp = timestamp
 
-                yield returned_timestamp, set(bids.items()), set(asks.items())
+                yield returned_timestamp, bids, asks
 
 
 def make_point(kind, exchange, base, quote, side, timestamp, price, amount, scraper_id):
@@ -115,22 +115,22 @@ def process_trades(entries, exchange):
     process_entry = globals()[f'process_{exchange}_trades_entry']
     for entry in entries:
         for side, price, amount in process_entry(entry['data']):
-            yield entry['timestamp'], side, price, amount
+            yield entry['timestamp'], side, float(price), float(amount)
 
 
 def process_book(entries, exchange):
     process = globals()[f'process_{exchange}_book']
     for timestamp, bids, asks in process(entries):
         for price, amount in bids.items():
-            yield timestamp, 'bid', price, amount
+            yield timestamp, 'bid', float(price), float(amount)
         for price, amount in asks.items():
-            yield timestamp, 'ask', price, amount
+            yield timestamp, 'ask', float(price), float(amount)
 
 
-def foo(entries, db, exchange, kind, base, quote, scraper_id):
-    process = process_trades if 'trades' else process_book
+def process(entries, db, exchange, kind, base, quote, scraper_id):
+    process_entries = process_trades if 'trades' else process_book
     points = []
-    for timestamp, side, price, amount in process(entries, exchange):
+    for timestamp, side, price, amount in process_entries(entries, exchange):
         print(kind, timestamp, side, price, amount)
         points.append(make_point(kind, exchange, base, quote, side, timestamp, price, amount, scraper_id))
         if len(points) >= BATCH_SIZE:
@@ -151,8 +151,8 @@ def handler(event, context):
     for record in event['Records']:
         bucket = record['s3']['bucket']['name']
         key = record['s3']['object']['key']
-        exchange, kind, base, quote, _, scraper_id = os.path.splitext(key)[0]
+        exchange, kind, base, quote, _, scraper_id = os.path.splitext(key)[0].split('-')
         path = os.path.join(tempfile.mkdtemp(), key)
         s3.download_file(bucket, key, path)
         entries = read_entries(path)
-        foo(entries, db, exchange, kind, base, quote, scraper_id)
+        process(entries, db, exchange, kind, base, quote, scraper_id)
