@@ -79,6 +79,59 @@ def process_gdax_book(entries):
                 yield returned_timestamp, bids, asks
 
 
+def process_bitfinex_book_snapshot(snapshot):
+    bids = {}
+    asks = {}
+    data = snapshot['data'][1]
+    for price, count, amount in data:
+        if amount > 0:
+            bids[normalize(price)] = str(amount)
+        elif amount < 0:
+            asks[normalize(price)] = str(amount)
+    return snapshot['timestamp'], bids, asks
+
+
+def process_bitfinex_book(entries):
+    # discard two first lines (event:info and event:subscribed)
+    evt_info = next(entries)
+    evt_subscribed = next(entries)
+
+    unprocessed_update = None
+
+    # first line => fetch snapshot
+    timestamp, bids, asks = process_bitfinex_book_snapshot(next(entries))
+    next_timestamp = timestamp + 1
+
+    # iterate: ~ next_timestamp
+    while True:
+        update = unprocessed_update if unprocessed_update is not None else next(entries)
+        timestamp = update['timestamp']
+        if timestamp < next_timestamp:
+            unprocessed_update = None
+            changes = update['data']
+            chanId, price, count, amount = update['data']
+            normed_price = normalize(price)
+            if amount > 0:  # bid
+                if count == 0:
+                    del bids[normed_price]
+                else:
+                    bids[normed_price] = str(amount)
+            elif amount < 0:  # ask
+                if count == 0:
+                    del asks[normed_price]
+                else:
+                    asks[normed_price] = str(amount)
+        else:
+            returned_timestamp = next_timestamp
+            unprocessed_update = update
+            if timestamp == next_timestamp:
+                next_timestamp = timestamp + 1
+            else:
+                next_timestamp = timestamp
+
+            yield returned_timestamp, bids, asks
+
+
 def make_point(kind, exchange, base, quote, side, timestamp, price, amount, scraper_id):
     global tick
     tick += 1
