@@ -17,7 +17,7 @@ def e2s(epoch):
     return datetime.fromtimestamp(epoch).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
 
-def prepare_sample_gdax_book(fpath, snap_sz, mid_price, limit):
+def prepare_sample_gdax_book(snap_sz, mid_price, limit):
     assert(snap_sz <= mid_price)
 
     snapshot = {}
@@ -154,39 +154,18 @@ def prepare_sample_gdax_book(fpath, snap_sz, mid_price, limit):
         msec += 1
         updates.append(update)
 
-    with open(fpath, 'w') as f:
-        f.write(json.dumps(snapshot) + '\n')
-        f.write(json.dumps(subscription) + '\n')
-
-    with open(fpath, 'a') as f:
-        for update in updates:
-            f.write(json.dumps(update) + '\n')
-
-    import shutil
-    with open(fpath, 'rb') as f_in, gzip.open(fpath + '.gz', 'wb') as f_out:
-        shutil.copyfileobj(f_in, f_out)
-
-    return base_ts
+    return base_ts, [snapshot, subscription, *updates]
 
 
 def test_process_gdax_book():
-    fpath = './gdax-book-btc-usd-20180324-cda678d6c28c454eafbb5dc31c56c354'
-    fpath_gz = fpath + '.gz'
-
-    # remove current files if existed
-    if os.path.exists(fpath):
-        os.remove(fpath)
-    if os.path.exists(fpath_gz):
-        os.remove(fpath_gz)
-
     # prepare sample data
     snap_sz = 5000
     mid_price = 10000
     limit = 10
-    base_ts = prepare_sample_gdax_book(fpath, snap_sz, mid_price, limit)
+    base_ts, lentries = prepare_sample_gdax_book(snap_sz, mid_price, limit)
 
     # run unit-tests
-    entries = read_entries(fpath_gz)
+    entries = iter(lentries)
     for (ts, dbids, dasks) in process_gdax_book(entries):
         sbids = sorted(dbids.items(), key=lambda key_value: key_value[0], reverse=True)
         sasks = sorted(dasks.items(), key=lambda key_value: key_value[0], reverse=False)
@@ -219,7 +198,3 @@ def test_process_gdax_book():
                 assert(bids[i][1] == '2')
                 assert(asks[i][0] == mid_price + (1 + i))
                 assert(asks[i][1] == '2')
-
-    # remove created files
-    os.remove(fpath)
-    os.remove(fpath_gz)
