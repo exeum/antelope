@@ -93,8 +93,8 @@ def process_bitfinex_book_snapshot(snapshot):
 
 def process_bitfinex_book(entries):
     # discard two first lines (event:info and event:subscribed)
-    evt_info = next(entries)
-    evt_subscribed = next(entries)
+    next(entries)
+    next(entries)
 
     unprocessed_update = None
 
