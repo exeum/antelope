@@ -10,6 +10,8 @@ from processor.processor import process_gdax_book
 
 
 def test_normalize():
+    assert normalize(42) == normalize(42.0)
+    assert normalize(1992) == normalize('1992.00000000')
     assert normalize(1.3) == normalize('  0001.3000 ')
 
 
