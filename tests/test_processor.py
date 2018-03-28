@@ -1,11 +1,7 @@
-import json
-import gzip
 from decimal import Decimal
 import time
 from datetime import datetime
-import os
 from processor.processor import normalize
-from processor.processor import read_entries
 from processor.processor import process_gdax_book
 
 
