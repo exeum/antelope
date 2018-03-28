@@ -108,7 +108,6 @@ def process_bitfinex_book(entries):
         timestamp = update['timestamp']
         if timestamp < next_timestamp:
             unprocessed_update = None
-            changes = update['data']
             chanId, price, count, amount = update['data']
             normed_price = normalize(price)
             if amount > 0:  # bid
