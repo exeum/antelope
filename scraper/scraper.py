@@ -11,7 +11,7 @@ import influxdb
 import requests
 import websocket
 
-TIMEOUT = 10
+TIMEOUT = 30
 
 
 def process(data, db, kind, exchange, base, quote, scraper_id):
@@ -54,7 +54,7 @@ def scrape(url, snapshot, subscribe, db, kind, exchange, base, quote):
         data = http_get(snapshot)
         process(data, db, kind, exchange, base, quote, scraper_id)
     logging.info(f'scraping {url}')
-    ws = websocket.create_connection(url, sslopt={'cert_reqs': ssl.CERT_NONE})
+    ws = websocket.create_connection(url, timeout=TIMEOUT, sslopt={'cert_reqs': ssl.CERT_NONE})
     if subscribe:
         logging.info(f'subscribing for {subscribe}')
         ws.send(subscribe)
