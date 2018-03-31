@@ -86,7 +86,7 @@ def main():
     db = influxdb.InfluxDBClient(host=args.influxdb, database=args.database, timeout=TIMEOUT)
     scraper_id = uuid.uuid4().hex
     if args.snapshot:
-        logging.info(f'getting snapshot {snapshot}')
+        logging.info(f'getting snapshot {args.snapshot}')
         data = http_get(args.gnapshot)
         process(data, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
     scrape(args.url, args.subscribe, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
