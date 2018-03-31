@@ -43,6 +43,7 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
         f.write(line + '\n')
 
 
+@retry(stop_max_attempt_number=RETRIES)
 def http_get(url):
     r = requests.get(url, timeout=TIMEOUT)
     r.raise_for_status()
@@ -50,19 +51,13 @@ def http_get(url):
 
 
 @retry(stop_max_attempt_number=RETRIES)
-def scrape(url, snapshot, subscribe, db, kind, exchange, base, quote):
+def scrape(url, subscribe, db, kind, exchange, base, quote, scraper_id):
     logging.info(f'scraping {exchange} {base}/{quote} {kind}')
-    scraper_id = uuid.uuid4().hex
-    if snapshot:
-        logging.info(f'getting snapshot {snapshot}')
-        data = http_get(snapshot)
-        process(data, db, kind, exchange, base, quote, scraper_id)
-    logging.info(f'connecting to {url}')
     ws = websocket.create_connection(url, timeout=TIMEOUT, sslopt={'cert_reqs': ssl.CERT_NONE})
     if subscribe:
         logging.info(f'subscribing to {subscribe}')
         ws.send(subscribe)
-    logging.info(f'receiving data')
+    logging.info('receiving data')
     while True:
         data = ws.recv()
         if not data:
@@ -89,7 +84,12 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.influxdb, database=args.database, timeout=TIMEOUT)
-    scrape(args.url, args.snapshot, args.subscribe, db, args.kind, args.exchange, args.base, args.quote)
+    scraper_id = uuid.uuid4().hex
+    if args.snapshot:
+        logging.info(f'getting snapshot {snapshot}')
+        data = http_get(args.gnapshot)
+        process(data, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
+    scrape(args.url, args.subscribe, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
 
 
 if __name__ == '__main__':
