@@ -12,8 +12,8 @@ import requests
 import websocket
 from retrying import retry
 
-TIMEOUT = 15
-RETRIES = 4
+TIMEOUT = 30
+RETRIES = 2
 
 
 def process(data, db, kind, exchange, base, quote, scraper_id):
@@ -62,6 +62,7 @@ def scrape(url, snapshot, subscribe, db, kind, exchange, base, quote):
     if subscribe:
         logging.info(f'subscribing to {subscribe}')
         ws.send(subscribe)
+    logging.info(f'receiving data')
     while True:
         data = ws.recv()
         if not data:
