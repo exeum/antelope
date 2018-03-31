@@ -43,7 +43,6 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
         f.write(line + '\n')
 
 
-@retry(stop_max_attempt_number=RETRIES)
 def http_get(url):
     r = requests.get(url, timeout=TIMEOUT)
     r.raise_for_status()
@@ -51,6 +50,14 @@ def http_get(url):
 
 
 @retry(stop_max_attempt_number=RETRIES)
+def websocket_recv(ws):
+    while True:
+        data = ws.recv()
+        if data:
+            return data
+        logging.warning('skipping empty response')
+
+
 def scrape(url, subscribe, db, kind, exchange, base, quote, scraper_id):
     logging.info(f'scraping {exchange} {base}/{quote} {kind}')
     ws = websocket.create_connection(url, timeout=TIMEOUT, sslopt={'cert_reqs': ssl.CERT_NONE})
@@ -59,10 +66,7 @@ def scrape(url, subscribe, db, kind, exchange, base, quote, scraper_id):
         ws.send(subscribe)
     logging.info('receiving data')
     while True:
-        data = ws.recv()
-        if not data:
-            logging.warning('skipping empty response')
-            continue
+        data = websocket_recv(ws)
         process(data, db, kind, exchange, base, quote, scraper_id)
 
 
