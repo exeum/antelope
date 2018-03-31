@@ -13,7 +13,7 @@ import websocket
 from retrying import retry
 
 TIMEOUT = 30
-RETRIES = 2
+RETRIES = 3
 
 
 def process(data, db, kind, exchange, base, quote, scraper_id):
