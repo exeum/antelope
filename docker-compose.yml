@@ -5,48 +5,147 @@ services:
     command: bitfinex book btc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"BTCUSD"}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
-
   bitfinex_trades_btcusd:
     image: exeum/antelope-scraper
     command: bitfinex trades btc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"trades","pair":"BTCUSD"}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
 
+  bitfinex_book_ethusd:
+    image: exeum/antelope-scraper
+    command: bitfinex book eth usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"ETHUSD"}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  bitfinex_trades_ethusd:
+    image: exeum/antelope-scraper
+    command: bitfinex trades eth usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"trades","pair":"ETHUSD"}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+  bitfinex_book_bchusd:
+    image: exeum/antelope-scraper
+    command: bitfinex book bch usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"BCHUSD"}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  bitfinex_trades_bchusd:
+    image: exeum/antelope-scraper
+    command: bitfinex trades bch usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"trades","pair":"BCHUSD"}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+  bitfinex_book_ltcusd:
+    image: exeum/antelope-scraper
+    command: bitfinex book ltc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"book","pair":"LTCUSD"}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  bitfinex_trades_ltcusd:
+    image: exeum/antelope-scraper
+    command: bitfinex trades ltc usd wss://api.bitfinex.com/ws --subscribe '{"event":"subscribe","channel":"trades","pair":"LTCUSD"}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+
   gdax_book_btcusd:
     image: exeum/antelope-scraper
-    command: gdax book btc usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BTC-USD"],"channels":["level2"]}' --influxdb ${INFLUXDB}
+    command: gdax book btc usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BTC-USD"],"channels":["level2","heartbeat"]}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
-
   gdax_trades_btcusd:
     image: exeum/antelope-scraper
-    command: gdax trades btc usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BTC-USD"],"channels":["matches"]}' --influxdb ${INFLUXDB}
+    command: gdax trades btc usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BTC-USD"],"channels":["matches","heartbeat"]}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
 
-  #gemini_book_btcusd:
-  #  image: exeum/antelope-scraper
-  #  command: gemini book btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
-  #  volumes:
-  #    - data:/data
-
-  #gemini_trades_btcusd:
-  #  image: exeum/antelope-scraper
-  #  command: gemini trades btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
-  #  volumes:
-  #    - data:/data
-
-  binance_book_ltcbtc:
+  gdax_book_ethusd:
     image: exeum/antelope-scraper
-    command: binance book ltc btc wss://stream.binance.com:9443/ws/ltcbtc@depth --snapshot 'https://www.binance.com/api/v1/depth?symbol=LTCBTC' --influxdb ${INFLUXDB}
+    command: gdax book eth usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["ETH-USD"],"channels":["level2","heartbeat"]}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  gdax_trades_ethusd:
+    image: exeum/antelope-scraper
+    command: gdax trades eth usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["ETH-USD"],"channels":["matches","heartbeat"]}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
 
-  binance_trades_ltcbtc:
+  gdax_book_bchusd:
     image: exeum/antelope-scraper
-    command: binance trades ltc btc wss://stream.binance.com:9443/ws/ltcbtc@trade --influxdb ${INFLUXDB}
+    command: gdax book bch usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BCH-USD"],"channels":["level2","heartbeat"]}' --influxdb ${INFLUXDB}
     volumes:
       - data:/data
+  gdax_trades_bchusd:
+    image: exeum/antelope-scraper
+    command: gdax trades bch usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["BCH-USD"],"channels":["matches","heartbeat"]}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+  gdax_book_ltcusd:
+    image: exeum/antelope-scraper
+    command: gdax book ltc usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["LTC-USD"],"channels":["level2","heartbeat"]}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  gdax_trades_ltcusd:
+    image: exeum/antelope-scraper
+    command: gdax trades ltc usd wss://ws-feed.gdax.com --subscribe '{"type":"subscribe","product_ids":["LTC-USD"],"channels":["matches","heartbeat"]}' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+
+  binance_book_btcusdt:
+    image: exeum/antelope-scraper
+    command: binance book btc usdt wss://stream.binance.com:9443/ws/btcusdt@depth --snapshot 'https://www.binance.com/api/v1/depth?symbol=BTCUSDT' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  binance_trades_btcusdt:
+    image: exeum/antelope-scraper
+    command: binance trades btc usdt wss://stream.binance.com:9443/ws/btcusdt@trade --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+  binance_book_ethusdt:
+    image: exeum/antelope-scraper
+    command: binance book eth usdt wss://stream.binance.com:9443/ws/ethusdt@depth --snapshot 'https://www.binance.com/api/v1/depth?symbol=ETHUSDT' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  binance_trades_ethusdt:
+    image: exeum/antelope-scraper
+    command: binance trades eth usdt wss://stream.binance.com:9443/ws/ethusdt@trade --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+  binance_book_ltcusdt:
+    image: exeum/antelope-scraper
+    command: binance book ltc usdt wss://stream.binance.com:9443/ws/ltcusdt@depth --snapshot 'https://www.binance.com/api/v1/depth?symbol=LTCUSDT' --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  binance_trades_ltcusdt:
+    image: exeum/antelope-scraper
+    command: binance trades ltc usdt wss://stream.binance.com:9443/ws/ltcusdt@trade --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+
+  gemini_book_btcusd:
+    image: exeum/antelope-scraper
+    command: gemini book btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  gemini_trades_btcusd:
+    image: exeum/antelope-scraper
+    command: gemini trades btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
+  gemini_book_ethusd:
+    image: exeum/antelope-scraper
+    command: gemini book eth usd wss://api.gemini.com/v1/marketdata/ETHUSD --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+  gemini_trades_ethusd:
+    image: exeum/antelope-scraper
+    command: gemini trades eth usd wss://api.gemini.com/v1/marketdata/ETHUSD --influxdb ${INFLUXDB}
+    volumes:
+      - data:/data
+
 
   deliverer:
     image: exeum/antelope-deliverer
