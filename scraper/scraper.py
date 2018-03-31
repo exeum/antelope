@@ -51,11 +51,7 @@ def http_get(url):
 
 @retry(stop_max_attempt_number=RETRIES)
 def websocket_recv(ws):
-    while True:
-        data = ws.recv()
-        if data:
-            return data
-        logging.warning('skipping empty response')
+    return ws.recv()
 
 
 def scrape(url, subscribe, db, kind, exchange, base, quote, scraper_id):
@@ -67,6 +63,9 @@ def scrape(url, subscribe, db, kind, exchange, base, quote, scraper_id):
     logging.info('receiving data')
     while True:
         data = websocket_recv(ws)
+        if not data:
+            logging.warning('skipping empty response')
+            continue
         process(data, db, kind, exchange, base, quote, scraper_id)
 
 
