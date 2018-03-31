@@ -10,8 +10,10 @@ import uuid
 import influxdb
 import requests
 import websocket
+from retrying import retry
 
-TIMEOUT = 30
+TIMEOUT = 10
+RETRIES = 3
 
 
 def process(data, db, kind, exchange, base, quote, scraper_id):
@@ -47,16 +49,18 @@ def http_get(url):
     return r.text
 
 
+@retry(stop_max_attempt_number=RETRIES)
 def scrape(url, snapshot, subscribe, db, kind, exchange, base, quote):
+    logging.info(f'scraping {exchange} {base}/{quote} {kind}')
     scraper_id = uuid.uuid4().hex
     if snapshot:
         logging.info(f'getting snapshot {snapshot}')
         data = http_get(snapshot)
         process(data, db, kind, exchange, base, quote, scraper_id)
-    logging.info(f'scraping {url}')
+    logging.info(f'connecting to {url}')
     ws = websocket.create_connection(url, timeout=TIMEOUT, sslopt={'cert_reqs': ssl.CERT_NONE})
     if subscribe:
-        logging.info(f'subscribing for {subscribe}')
+        logging.info(f'subscribing to {subscribe}')
         ws.send(subscribe)
     while True:
         data = ws.recv()
