@@ -12,8 +12,8 @@ import requests
 import websocket
 from retrying import retry
 
-TIMEOUT = 10
-RETRIES = 3
+TIMEOUT = 15
+RETRIES = 4
 
 
 def process(data, db, kind, exchange, base, quote, scraper_id):

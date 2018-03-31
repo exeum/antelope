@@ -11,7 +11,7 @@ import boto3
 import influxdb
 
 DATABASE = 'antelope'
-TIMEOUT = 10
+TIMEOUT = 15
 BATCH_SIZE = 1000
 BOOK_LIMIT = 50
 
