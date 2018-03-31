@@ -87,7 +87,7 @@ def main():
     scraper_id = uuid.uuid4().hex
     if args.snapshot:
         logging.info(f'getting snapshot {args.snapshot}')
-        data = http_get(args.gnapshot)
+        data = http_get(args.snapshot)
         process(data, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
     scrape(args.url, args.subscribe, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
 
