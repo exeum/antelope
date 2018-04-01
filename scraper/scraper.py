@@ -10,7 +10,7 @@ import uuid
 import influxdb
 import requests
 import websocket
-from retrying import retry
+from tenacity import retry, stop_after_attempt, TryAgain
 
 TIMEOUT = 30
 RETRIES = 5
@@ -43,7 +43,7 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
         f.write(line + '\n')
 
 
-@retry(stop_max_attempt_number=RETRIES)
+@retry(stop=stop_after_attempt(RETRIES))
 def http_get(url):
     logging.info(f'getting {url}')
     r = requests.get(url, timeout=TIMEOUT)
@@ -51,16 +51,16 @@ def http_get(url):
     return r.text
 
 
-@retry(stop_max_attempt_number=RETRIES)
+@retry(stop=stop_after_attempt(RETRIES))
 def websocket_recv(ws):
     data = ws.recv()
     if data:
         return data
     logging.warning('empty response')
-    raise ValueError
+    raise TryAgain
 
 
-@retry(stop_max_attempt_number=RETRIES)
+@retry(stop=stop_after_attempt(RETRIES))
 def websocket_read(url, subscribe, snapshot):
     if snapshot:
         yield http_get(snapshot)
