@@ -10,7 +10,6 @@ import uuid
 import influxdb
 import requests
 import websocket
-from tenacity import retry, stop_after_attempt, TryAgain
 
 TIMEOUT = 30
 RETRIES = 5
@@ -43,7 +42,6 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
         f.write(line + '\n')
 
 
-@retry(stop=stop_after_attempt(RETRIES))
 def http_get(url):
     logging.info(f'getting {url}')
     r = requests.get(url, timeout=TIMEOUT)
@@ -51,16 +49,6 @@ def http_get(url):
     return r.text
 
 
-@retry(stop=stop_after_attempt(RETRIES))
-def websocket_recv(ws):
-    data = ws.recv()
-    if data:
-        return data
-    logging.warning('empty response')
-    raise TryAgain
-
-
-@retry(stop=stop_after_attempt(RETRIES))
 def websocket_read(url, subscribe, snapshot):
     if snapshot:
         yield http_get(snapshot)
@@ -71,14 +59,26 @@ def websocket_read(url, subscribe, snapshot):
         ws.send(subscribe)
     logging.info('receiving data')
     while True:
-        yield websocket_recv(ws)
+        data = ws.recv()
+        if not data:
+            logging.warning('skipping empty response')
+            continue
+        yield data
 
 
 def scrape(url, subscribe, snapshot, db, kind, exchange, base, quote):
     scraper_id = uuid.uuid4().hex
     logging.info(f'scraping {exchange} {base}/{quote} {kind} ({scraper_id})')
-    for data in websocket_read(url, subscribe, snapshot):
-        process(data, db, kind, exchange, base, quote, scraper_id)
+    retry_count = 0
+    while retry_count < RETRIES:
+        try:
+            for data in websocket_read(url, subscribe, snapshot):
+                process(data, db, kind, exchange, base, quote, scraper_id)
+                retry_count = 0
+        except Exception:
+            retry_count += 1
+            logging.exception(f'{retry_count}/{RETRIES} retries')
+    raise RuntimeError('too many retries')
 
 
 def parse_args():

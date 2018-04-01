@@ -1,4 +1,3 @@
 influxdb
 requests
-tenacity
 websocket-client
