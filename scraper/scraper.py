@@ -13,7 +13,7 @@ import websocket
 from retrying import retry
 
 TIMEOUT = 30
-RETRIES = 3
+RETRIES = 5
 
 
 def process(data, db, kind, exchange, base, quote, scraper_id):
@@ -43,7 +43,9 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
         f.write(line + '\n')
 
 
+@retry(stop_max_attempt_number=RETRIES)
 def http_get(url):
+    logging.info(f'getting {url}')
     r = requests.get(url, timeout=TIMEOUT)
     r.raise_for_status()
     return r.text
@@ -51,21 +53,31 @@ def http_get(url):
 
 @retry(stop_max_attempt_number=RETRIES)
 def websocket_recv(ws):
-    return ws.recv()
+    data = ws.recv()
+    if data:
+        return data
+    logging.warning('empty response')
+    raise ValueError
 
 
-def scrape(url, subscribe, db, kind, exchange, base, quote, scraper_id):
-    logging.info(f'scraping {exchange} {base}/{quote} {kind}')
+@retry(stop_max_attempt_number=RETRIES)
+def websocket_read(url, subscribe, snapshot):
+    if snapshot:
+        yield http_get(snapshot)
+    logging.info(f'connecting to {url}')
     ws = websocket.create_connection(url, timeout=TIMEOUT, sslopt={'cert_reqs': ssl.CERT_NONE})
     if subscribe:
-        logging.info(f'subscribing to {subscribe}')
+        logging.info(f'sending {subscribe}')
         ws.send(subscribe)
     logging.info('receiving data')
     while True:
-        data = websocket_recv(ws)
-        if not data:
-            logging.warning('skipping empty response')
-            continue
+        yield websocket_recv(ws)
+
+
+def scrape(url, subscribe, snapshot, db, kind, exchange, base, quote):
+    scraper_id = uuid.uuid4().hex
+    logging.info(f'scraping {exchange} {base}/{quote} {kind} ({scraper_id})')
+    for data in websocket_read(url, subscribe, snapshot):
         process(data, db, kind, exchange, base, quote, scraper_id)
 
 
@@ -87,12 +99,7 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.influxdb, database=args.database, timeout=TIMEOUT)
-    scraper_id = uuid.uuid4().hex
-    if args.snapshot:
-        logging.info(f'getting snapshot {args.snapshot}')
-        data = http_get(args.snapshot)
-        process(data, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
-    scrape(args.url, args.subscribe, db, args.kind, args.exchange, args.base, args.quote, scraper_id)
+    scrape(args.url, args.subscribe, args.snapshot, db, args.kind, args.exchange, args.base, args.quote)
 
 
 if __name__ == '__main__':
