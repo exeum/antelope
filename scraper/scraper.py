@@ -12,7 +12,7 @@ import requests
 import websocket
 
 TIMEOUT = 30
-RETRIES = 5
+RETRIES = 10
 
 
 def process(data, db, kind, exchange, base, quote, scraper_id):
