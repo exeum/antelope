@@ -10,7 +10,7 @@ from pathlib import Path
 import boto3
 
 INTERVAL = 60
-EXPIRY = 600
+EXPIRY = 300
 
 
 def compress(path):
