@@ -3,7 +3,9 @@
 import argparse
 import json
 import logging
+import queue
 import ssl
+import threading
 import time
 import uuid
 
@@ -13,12 +15,24 @@ import websocket
 
 TIMEOUT = 30
 RETRIES = 10
+QUEUE_SIZE = 10000
+
+points = queue.Queue(maxsize=QUEUE_SIZE)
 
 
-def process(data, db, kind, exchange, base, quote, scraper_id):
+def write_points(db):
+    while True:
+        try:
+            db.write_points([points.get()])
+        except Exception:
+            logging.warning('unable to write point')
+            time.sleep(TIMEOUT)
+
+
+def process(data, kind, exchange, base, quote, scraper_id):
     size = len(data)
     logging.info(data)
-    db.write_points([{
+    points.put({
         'measurement': 'scraper',
         'tags': {
             'kind': kind,
@@ -31,7 +45,7 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
         'fields': {
             'size': size,
         }
-    }])
+    })
     line = json.dumps({
         'timestamp': time.time(),
         'data': json.loads(data)
@@ -42,6 +56,12 @@ def process(data, db, kind, exchange, base, quote, scraper_id):
         f.write(line + '\n')
 
 
+def start_thread(target, args):
+    thread = threading.Thread(target=target, args=args)
+    thread.daemon = True
+    thread.start()
+
+
 def http_get(url):
     logging.info(f'getting {url}')
     r = requests.get(url, timeout=TIMEOUT)
@@ -49,7 +69,7 @@ def http_get(url):
     return r.text
 
 
-def websocket_read(url, subscribe, snapshot):
+def read(url, subscribe, snapshot):
     if snapshot:
         yield http_get(snapshot)
     logging.info(f'connecting to {url}')
@@ -66,14 +86,14 @@ def websocket_read(url, subscribe, snapshot):
         yield data
 
 
-def scrape(url, subscribe, snapshot, db, kind, exchange, base, quote):
+def scrape(url, subscribe, snapshot, kind, exchange, base, quote):
     scraper_id = uuid.uuid4().hex
     logging.info(f'scraping {exchange} {base}/{quote} {kind} ({scraper_id})')
     retry_count = 0
     while retry_count < RETRIES:
         try:
-            for data in websocket_read(url, subscribe, snapshot):
-                process(data, db, kind, exchange, base, quote, scraper_id)
+            for data in read(url, subscribe, snapshot):
+                process(data, kind, exchange, base, quote, scraper_id)
                 retry_count = 0
         except Exception:
             retry_count += 1
@@ -99,7 +119,8 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.influxdb, database=args.database, timeout=TIMEOUT)
-    scrape(args.url, args.subscribe, args.snapshot, db, args.kind, args.exchange, args.base, args.quote)
+    start_thread(write_points, [db])
+    scrape(args.url, args.subscribe, args.snapshot, args.kind, args.exchange, args.base, args.quote)
 
 
 if __name__ == '__main__':
