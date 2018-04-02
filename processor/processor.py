@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import decimal
-import gzip
+import bz2
 import tempfile
 import json
 import logging
@@ -188,7 +188,7 @@ def process(entries, db, exchange, kind, base, quote, scraper_id):
 
 
 def read_entries(path):
-    with gzip.open(path, 'rt') as f:
+    with bz2.open(path, 'rt') as f:
         for line in f:
             yield json.loads(line)
 

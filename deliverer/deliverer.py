@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-import gzip
+import bz2
 import logging
 import shutil
 import time
@@ -15,7 +15,7 @@ EXPIRY = 600
 
 def compress(path):
     with open(path, 'rb') as fin:
-        with gzip.open(str(path) + '.gz', 'wb') as fout:
+        with bz2.open(str(path) + '.bz2', 'wb') as fout:
             shutil.copyfileobj(fin, fout)
 
 
@@ -44,12 +44,12 @@ def main():
     s3 = boto3.client('s3', region_name=args.region)
     while True:
         data_path = Path('/data')
-        for path in data_path.glob('*[!.gz]'):
+        for path in data_path.glob('*[!.bz2]'):
             time_inactive = time.time() - path.stat().st_mtime
             if time_inactive >= EXPIRY:
                 logging.info(f'{path.name} inactive for {int(time_inactive)} seconds; compressing')
                 compress(path)
-        for path in data_path.glob('*.gz'):
+        for path in data_path.glob('*.bz2'):
             upload(path, s3, args.bucket)
             remove(path)
             remove(path.parent.joinpath(path.stem))
