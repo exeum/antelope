@@ -138,6 +138,23 @@ services:
       - data:/data
 
 
+  binance_book_eosbtc:
+    image: exeum/antelope-scraper
+    command: binance book eos btc wss://stream.binance.com:9443/ws/eosbtc@depth --snapshot 'https://www.binance.com/api/v1/depth?symbol=EOSBTC' --influxdb ${INFLUXDB}
+    logging:
+      options:
+        max-size: "100m"
+    volumes:
+      - data:/data
+  binance_trades_eosbtc:
+    image: exeum/antelope-scraper
+    command: binance trades eos btc wss://stream.binance.com:9443/ws/eosbtc@trade --influxdb ${INFLUXDB}
+    logging:
+      options:
+        max-size: "100m"
+    volumes:
+      - data:/data
+
   binance_book_btcusdt:
     image: exeum/antelope-scraper
     command: binance book btc usdt wss://stream.binance.com:9443/ws/btcusdt@depth --snapshot 'https://www.binance.com/api/v1/depth?symbol=BTCUSDT' --influxdb ${INFLUXDB}
