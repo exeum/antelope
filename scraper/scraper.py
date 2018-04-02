@@ -32,6 +32,7 @@ def write_points(db):
 def process(data, kind, exchange, base, quote, scraper_id):
     size = len(data)
     logging.info(data)
+    timestamp = time.time()
     points.put({
         'measurement': 'scraper',
         'tags': {
@@ -41,13 +42,13 @@ def process(data, kind, exchange, base, quote, scraper_id):
             'quote': quote,
             'scraper_id': scraper_id
         },
-        'time': int(time.time()) * 1000000000,
+        'time': int(timestamp * 1000000000),
         'fields': {
             'size': size,
         }
     })
     line = json.dumps({
-        'timestamp': time.time(),
+        'timestamp': int(timestamp),
         'data': json.loads(data)
     }, separators=(',', ':'))
     date = time.strftime('%Y%m%d')
@@ -119,7 +120,7 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
     args = parse_args()
     db = influxdb.InfluxDBClient(host=args.influxdb, database=args.database, timeout=TIMEOUT)
-    start_thread(write_points, [db])
+    start_thread(write_points, (db,))
     scrape(args.url, args.subscribe, args.snapshot, args.kind, args.exchange, args.base, args.quote)
 
 
