@@ -241,6 +241,23 @@ services:
     volumes:
       - data:/data
 
+  gemini_book_ethbtc:
+    image: exeum/antelope-scraper
+    command: gemini book eth btc wss://api.gemini.com/v1/marketdata/ETHBTC --influxdb ${INFLUXDB}
+    logging:
+      options:
+        max-size: "100m"
+    volumes:
+      - data:/data
+  gemini_trades_ethbtc:
+    image: exeum/antelope-scraper
+    command: gemini trades eth btc wss://api.gemini.com/v1/marketdata/ETHBTC --influxdb ${INFLUXDB}
+    logging:
+      options:
+        max-size: "100m"
+    volumes:
+      - data:/data
+
 
   deliverer:
     image: exeum/antelope-deliverer
