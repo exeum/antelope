@@ -224,6 +224,24 @@ services:
       - data:/data
 
 
+  bitmex_book_btcusd:
+    image: exeum/antelope-scraper
+    command: bitmex book btc usd wss://www.bitmex.com/realtime?subscribe=orderBookL2:XBTUSD --influxdb ${INFLUXDB}
+    logging:
+      options:
+        max-size: "100m"
+    volumes:
+      - data:/data
+  bitmex_trades_btcusd:
+    image: exeum/antelope-scraper
+    command: bitmex trades btc usd wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD --influxdb ${INFLUXDB}
+    logging:
+      options:
+        max-size: "100m"
+    volumes:
+      - data:/data
+
+
   gemini_book_btcusd:
     image: exeum/antelope-scraper
     command: gemini book btc usd wss://api.gemini.com/v1/marketdata/BTCUSD --influxdb ${INFLUXDB}
