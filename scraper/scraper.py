@@ -33,20 +33,23 @@ def process(data, kind, exchange, base, quote, scraper_id):
     size = len(data)
     logging.info(data)
     timestamp = time.time()
-    points.put({
-        'measurement': 'scraper',
-        'tags': {
-            'kind': kind,
-            'exchange': exchange,
-            'base': base,
-            'quote': quote,
-            'scraper_id': scraper_id
-        },
-        'time': int(timestamp * 1000000000),
-        'fields': {
-            'size': size,
-        }
-    })
+    try:
+        points.put_nowait({
+            'measurement': 'scraper',
+            'tags': {
+                'kind': kind,
+                'exchange': exchange,
+                'base': base,
+                'quote': quote,
+                'scraper_id': scraper_id
+            },
+            'time': int(timestamp * 1000000000),
+            'fields': {
+                'size': size,
+            }
+        })
+    except queue.Full:
+        logging.warning('queue full; skipping')
     line = json.dumps({
         'timestamp': int(timestamp),
         'data': json.loads(data)
