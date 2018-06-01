@@ -5,10 +5,9 @@ python:
 services:
   - docker
 install:
-  - pip install boto3 influxdb pycodestyle pyflakes pytest
+  - pip install boto3 influxdb flake8 pytest
 script:
-  - pyflakes .
-  - pycodestyle --max-line-length=120 --show-source .
+  - flake8 --max-line-length=120 --show-source .
   - python -m pytest --verbose
   - make build
 notifications:
