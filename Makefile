@@ -1,8 +1,8 @@
 .PHONY: build push deploy rm ps
 
 build:
-	( cd scraper && docker build -t exeum/antelope-scraper . )
-	( cd deliverer && docker build -t exeum/antelope-deliverer . )
+	docker build -t exeum/antelope-scraper scraper
+	docker build -t exeum/antelope-deliverer deliverer
 
 push:
 	docker push exeum/antelope-scraper
