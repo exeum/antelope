@@ -44,7 +44,7 @@ def process(data, kind, exchange, base, quote, scraper_id):
                     "quote": quote,
                     "scraper_id": scraper_id,
                 },
-                "time": int(timestamp * 1000000000),
+                "time": int(timestamp * 1_000_000_000),
                 "fields": {"size": size},
             }
         )
