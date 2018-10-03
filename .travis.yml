@@ -5,11 +5,10 @@ python:
 services:
   - docker
 install:
-  - pip install boto3 black influxdb pyflakes pytest
+  - pip install boto3 black influxdb pyflakes
 script:
   - pyflakes .
   - black --check .
-  - python -m pytest --verbose
   - make build
 notifications:
   slack: exeum-foundation:N5NC7XlSG6BlY85rF3aILVG6
