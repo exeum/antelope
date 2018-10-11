@@ -44,7 +44,9 @@ def main():
     s3 = boto3.client("s3", region_name=args.region)
     while True:
         data_path = Path("/data")
-        for path in data_path.glob("*[!.bz2]"):
+        for path in data_path.glob("*"):
+            if path.suffix == ".bz2":
+                continue
             time_inactive = time.time() - path.stat().st_mtime
             logging.info(f"{path.name} inactive for {int(time_inactive)} seconds")
             if time_inactive >= EXPIRY:
