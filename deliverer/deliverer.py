@@ -48,9 +48,10 @@ def main():
             if path.suffix == ".bz2":
                 continue
             time_inactive = time.time() - path.stat().st_mtime
-            logging.info(f"{path.name} inactive for {int(time_inactive)} seconds")
             if time_inactive >= EXPIRY:
-                logging.info(f"compressing {path.name}")
+                logging.info(
+                    f"compressing {path.name} (inactive for {int(time_inactive)} seconds)"
+                )
                 compress(path)
         for path in data_path.glob("*.bz2"):
             upload(path, s3, args.bucket)
