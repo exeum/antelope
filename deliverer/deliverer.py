@@ -28,7 +28,10 @@ def upload(path, s3, bucket):
 
 def remove(path):
     logging.info(f"removing {path.name}")
-    path.unlink()
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        logging.warning(f"{path.name} not found")
 
 
 def parse_args():
