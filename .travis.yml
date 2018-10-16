@@ -10,5 +10,3 @@ script:
   - pyflakes .
   - black --check .
   - make build
-notifications:
-  slack: exeum-foundation:N5NC7XlSG6BlY85rF3aILVG6
